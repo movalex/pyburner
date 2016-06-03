@@ -20,9 +20,12 @@ def trunkate_file(file):
         f.truncate()
     except FileNotFoundError:
         pass
-   
 
-class CSVViewer(tk.Text):
+PRIORITY = 100
+VERSION = 2014
+
+class MyTextSettings(tk.Text):
+
     def setFrames(self, frame):
         self.insert(tk.END, frame)
         self.see(tk.END)
@@ -47,52 +50,47 @@ class MainApplication(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.geometry('+300+100')
         self.title('CSV Parser')
-
+        
+        # text area frame
         frame1 = tk.Frame(self)
         scrollbar = tk.Scrollbar(frame1)
-        self.text = CSVViewer(frame1, width=52, height=20,
-                              wrap=tk.WORD, 
-                              #font=('Courier',11),
-                              yscrollcommand=scrollbar.set)
+        self.text = MyTextSettings(frame1, width=52, height=20,
+                                   wrap=tk.WORD, yscrollcommand=scrollbar.set)
         self.text.pack(side=tk.LEFT)
         scrollbar.pack(side=tk.LEFT, fill=tk.Y)
         scrollbar.config(command=self.text.yview)
         frame1.grid(row=0, column=0, sticky='w')
-
-
+        
+        # buttons area frame
         frame2 = tk.Frame(self) 
         self.L0 = tk.Label(frame2)
         self.L0.grid(row=0, column=0, columnspan=3, sticky='we')
         self.L1 = tk.Label(frame2, text='Enter server number:')
         self.L1.grid(row=1, column=0, sticky='w')
-        
         self.L2 = tk.Label(frame2, width=8, text='')
         self.L2.grid(row=1, column=1)
         self.L2.grid_propagate(False)
-        
-        offset_size = None
         self.entry = tk.Entry(frame2, width=7)
         self.entry.grid(row=1, column=2, sticky='w', padx=2)
-        if platform.system() == 'Windows':
-            offset_size = 15
-            self.entry.config(width=offset_size)
 
+        #offset entry size for mac/win interface consistency
+        offset_size = None
+        if platform.system() == 'Windows':
+            offset_size = 15 #stupid hardcode
+            self.entry.config(width=offset_size)
 
         button1 = tk.Button(frame2, text='submit', command=self.get_server_entry)
         button1.grid(row=1, column=3, sticky='w')
         button1.config(width=offset_size)
         self.bind('<Return>', self.get_server_entry)
-        
-        self.button2 = tk.Button(frame2, text='run', command=self.main)
+        self.button2 = tk.Button(frame2, text='run', command=self.run_app)
         self.button2.grid(row=2, column=2, columnspan=2, sticky='we')
-        self.bind('<Control-r>', self.main)
-        
+        self.bind('<Control-r>', self.run_app)
         self.var = tk.IntVar()
         self.var.set(1)
         self.checkbutton1 = tk.Checkbutton(frame2, text='open result',
                                            variable=self.var)
         self.checkbutton1.grid(row=2, column=0, sticky='w')
-
         button_clear = tk.Button(frame2, text='clear', command=self.cleanup)
         button_clear.grid(row=3, column=2,columnspan=2, sticky='we')
         button_clear.config()
@@ -100,10 +98,10 @@ class MainApplication(tk.Tk):
         button3.grid(row=4, column=2, columnspan=2, sticky='we')
         frame2.grid(row=1, column=0, sticky='we', padx=(5,0))
 
+        #file menu
         menubar = tk.Menu(self)
         filemenu = tk.Menu(menubar, tearoff=0)
         self.config(menu=menubar)
-
         filemenu.add_command(label='Open',
                              command=self.csv_open,
                              accelerator="Ctrl+O")
@@ -117,33 +115,35 @@ class MainApplication(tk.Tk):
         self.bind("<Control-q>", self.quit)
         menubar.add_cascade(label='File', menu=filemenu)
 
+        #default values
         self.os_name = platform.system()
-        self.bat_file = "rerender.bat"
-        self.priority = 100
-        self.version = 2014
+        self.file_contents_list = []
         self.job_name = False
         self.selected_server = False
-        self.max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(self.version)
+        self.max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(VERSION)
         self.text.clear_help()
         self.servers = []
+        self.maxfilepath= ''
 
     def cleanup(self):
-        self.text.clear_help()
-        self.L1.config(text='Enter server number:')
         self.L2.config(text='')
-        self.entry.delete("0", tk.END)        
+        self.entry.delete("0", tk.END)
+        self.text.clear_help()
+        self.restore_defaults()
 
-    def csv_open(self, *args):
-        self.text.clear()
+    def restore_defaults(self):
+        self.job_name = False
+        self.selected_server = False
         self.file_contents_list = []
         self.servers = []
-        self.job_name = ''
-        self.server_num = 0
-        self.frame_list = []
+
+    def csv_open(self, *args):
+        self.restore_defaults()
+        self.text.clear()
         the_csv_file = filedialog.askopenfilename(
                         initialdir='{}/Desktop'.format(os.path.expanduser('~')),
-                        filetypes=(('CSV file', '*.csv'),
-                                   ('Text File', '*.txt'),
+                        filetypes=(('Text File', '*.txt'),
+                                   ('CSV file', '*.csv'),
                                    ('All Files', '*.*')),
                         title='Choose a file')
         if the_csv_file:
@@ -162,7 +162,7 @@ class MainApplication(tk.Tk):
                     pass
             sorted_servers = sorted(set(self.servers))
             self.text.setText("Found {} servers in file:".format(
-                              len(sorted_servers)))
+                              len(set(self.servers))))
             for num, serv in enumerate(sorted_servers):
                 self.text.setText('{}) {}'.format(num, serv))
             self.L2.config(text='0-{}'.format(
@@ -207,20 +207,46 @@ class MainApplication(tk.Tk):
         openmaxfile = filedialog.askopenfilename(
                   initialdir=r'\\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes',
                   title='Choose MAX file')
-        maxfile = os.path.normpath(openmaxfile)
-        return maxfile
+        self.maxfilepath = os.path.normpath(openmaxfile)
+        return self.maxfilepath
 
     def add_quotes(self, txt):
         return '"{}"'.format(txt)
+        
+    def open_result(self, folder):
+        # show the bat-file folder in Windows Explorer or Finder
+        if self.os_name == 'Darwin':
+            subprocess.Popen(['open', folder])
+        elif self.os_name == 'Windows':
+            subprocess.Popen('explorer /open, {}'.format(folder))
+        else:
+            pass
 
-    #def del_last(self, file):
-    #    with open(file, 'rb+') as filehandle:
-    #        filehandle.seek(-1, os.SEEK_END)
-    #        filehandle.truncate()
+    def run_app(self, *args):
+        if self.job_name and self.selected_server:
+            self.text.setText('These frames will be re-rendered:')
+            for frame in self.return_frames():
+                self.text.setFrames('{}, '.format(frame))
+            self.text.setFrames('\n')
+            self.make_bat(self.choose_max_file())
+            if self.var.get() == 1:
+                self.text.setText('\nOpening folder...')
+                self.open_result(os.path.split(self.maxfilepath)[0])
+                self.var.set(0) # uncheck button to prevent multiple windows
+            else:
+                pass
+        elif not self.job_name: 
+            self.text.setText("You should select jobs file first")
+        elif not self.selected_server:
+            self.text.setText("Enter server number and submit!")
 
-    def make_bat(self, quotemaxfile):
-        quoted_max_file = self.add_quotes(quotemaxfile)
-        with open(self.bat_file, 'a') as bat:
+    def make_bat(self, maxfilepath):
+        quoted_max_file = self.add_quotes(self.maxfilepath)
+        max_folder, max_file = os.path.split(self.maxfilepath)
+        filename, _ = os.path.splitext(max_file)
+        bat_file = os.path.join(max_folder, '{}_rerender.bat'.format(filename))
+        trunkate_file(bat_file)
+        with open(bat_file, 'a') as bat:
             print(self.max_version, quoted_max_file, file=bat, end=' ')
             print('-frames:', file=bat, end='')
             for frame in self.return_frames():
@@ -230,40 +256,11 @@ class MainApplication(tk.Tk):
             print(' -jobname: {}_{}_rerender'.format(self.job_name,
                                                      self.selected_server),
                                                      file=bat, end='')
-            print(' -priority:{}'.format(self.priority), file=bat)
+            print(' -priority:{}'.format(PRIORITY), file=bat)
             bat.close()
-        self.text.setText('Done!\nPlease, check \"{}\" file at {}'.format(
-                          self.bat_file, os.getcwd()))
+        self.text.setText('Done!\nPlease, check "{}" file at {}'.format(
+                          os.path.split(bat_file)[1], max_folder))
         self.entry.focus()
-        
-    def open_result(self, folder):
-        # open bat-file folder contents in Windows Explorer
-        if self.os_name == 'Darwin':
-            subprocess.Popen(['open', folder])
-        elif self.os_name == 'Windows':
-            subprocess.Popen('explorer /open, {}'.format(folder))
-        else:
-            pass
-
-    def main(self, *args):
-        if self.job_name and self.selected_server:
-            trunkate_file(self.bat_file)
-            self.text.setText('These frames will be re-rendered:')
-            for frame in self.return_frames():
-                self.text.setFrames('{}, '.format(frame))
-            self.text.setFrames('\n')
-            self.make_bat(self.choose_max_file())
-            if self.var.get() == 1:
-                self.text.setText('\nOpening folder...')
-                self.open_result(os.getcwd())
-                self.var.set(0) # set check button to off when run
-
-            else:
-                pass
-        elif not self.job_name: 
-            self.text.setText("You should select jobs file first")
-        elif not self.selected_server:
-            self.text.setText("Enter server number and submit!")
 
     def show_pref(self):
         preftext = "Here\'ll be preferences\nfor MAX version,\npriority slider,\nbat-file save folder settings"
