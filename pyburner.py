@@ -22,8 +22,11 @@ def trunkate_file(file):
     except FileNotFoundError:
         pass
 
+# this values should be moved to preferences:
 PRIORITY = 100
 VERSION = 2014
+RENDERSERVER = '2renderingserv'
+SCENELOOKUP = r'\\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes'
 
 class MyTextSettings(tk.Text):
 
@@ -206,7 +209,7 @@ class MainApplication(tk.Tk):
 
     def choose_max_file(self):
         openmaxfile = filedialog.askopenfilename(
-                  initialdir=r'\\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes',
+                  initialdir=SCENELOOKUP,
                   title='Choose MAX file')
         self.maxfilepath = os.path.normpath(openmaxfile)
         return self.maxfilepath
@@ -252,7 +255,7 @@ class MainApplication(tk.Tk):
             print('-frames:', file=bat, end='')
             for frame in self.return_frames():
                 print(frame, file=bat, end=',')
-            print(' -submit:', socket.gethostbyname('2renderingserv'),
+            print(' -submit:', socket.gethostbyname(RENDERSERVER),
                   file=bat, end='')
             print(' -jobname: {}_{}_rerender'.format(self.job_name,
                                                      self.selected_server),
