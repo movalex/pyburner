@@ -6,10 +6,11 @@ import socket
 import platform
 import subprocess
 
-if sys.version_info[0] == 3:
+try:
     from tkinter import filedialog
     import tkinter as tk
-else:
+except ImportError:
+    # python 2
     import tkFileDialog as filedialog
     import Tkinter as tk
 
