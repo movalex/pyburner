@@ -127,7 +127,7 @@ class MainApplication(tk.Tk):
         self.max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(VERSION)
         self.text.clear_help()
         self.servers = []
-        self.maxfilepath= ''
+        
 
     def cleanup(self):
         self.L2.config(text='')
@@ -211,8 +211,8 @@ class MainApplication(tk.Tk):
         openmaxfile = filedialog.askopenfilename(
                   initialdir=SCENELOOKUP,
                   title='Choose MAX file')
-        self.maxfilepath = os.path.normpath(openmaxfile)
-        return self.maxfilepath
+        normFilePath = os.path.normpath(openmaxfile)
+        return normFilePath
 
     def add_quotes(self, txt):
         return '"{}"'.format(txt)
@@ -228,25 +228,19 @@ class MainApplication(tk.Tk):
 
     def run_app(self, *args):
         if self.job_name and self.selected_server:
-            self.text.setText('These frames will be re-rendered:')
+            self.text.setText('\nThese frames will be re-rendered:')
             for frame in self.return_frames():
                 self.text.setFrames('{}, '.format(frame))
             self.text.setFrames('\n')
             self.make_bat(self.choose_max_file())
-            if self.var.get() == 1:
-                self.text.setText('\nOpening folder...')
-                self.open_result(os.path.split(self.maxfilepath)[0])
-                self.var.set(0) # uncheck button to prevent multiple windows
-            else:
-                pass
         elif not self.job_name: 
             self.text.setText("You should select jobs file first")
         elif not self.selected_server:
             self.text.setText("Enter server number and submit!")
 
     def make_bat(self, maxfilepath):
-        quoted_max_file = self.add_quotes(self.maxfilepath)
-        max_folder, max_file = os.path.split(self.maxfilepath)
+        quoted_max_file = self.add_quotes(maxfilepath)
+        max_folder, max_file = os.path.split(maxfilepath)
         filename, _ = os.path.splitext(max_file)
         bat_file = os.path.join(max_folder, '{}_rerender.bat'.format(filename))
         trunkate_file(bat_file)
@@ -262,8 +256,17 @@ class MainApplication(tk.Tk):
                                                      file=bat, end='')
             print(' -priority:{}'.format(PRIORITY), file=bat)
             bat.close()
+        if self.var.get() == 1:
+            self.text.setText('\nOpening folder...\n')
+            self.open_result(max_folder)
+            self.var.set(0) # uncheck button to prevent multiple windows
+        else:
+            pass
+
         self.text.setText('Done!\nPlease, check "{}" file at {}'.format(
                           os.path.split(bat_file)[1], max_folder))
+
+
         self.entry.focus()
 
     def show_pref(self):
