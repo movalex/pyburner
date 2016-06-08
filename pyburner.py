@@ -20,7 +20,7 @@ except NameError:
     # for Python2
     FileNotFoundError = IOError
 
-def trunkate_file(file):
+def truncate_file(file):
     try:
         f = open(file, 'r+')
         f.truncate()
@@ -248,7 +248,7 @@ class MainApplication(tk.Tk):
         max_folder, max_file = os.path.split(maxfilepath)
         filename, _ = os.path.splitext(max_file)
         bat_file = os.path.join(max_folder, '{}_rerender.bat'.format(filename))
-        trunkate_file(bat_file)
+        truncate_file(bat_file)
         with open(bat_file, 'a') as bat:
             print(self.max_version, quoted_max_file, file=bat, end=' ')
             print('-frames:', file=bat, end='')
@@ -270,7 +270,6 @@ class MainApplication(tk.Tk):
 
         self.text.setText('Done!\nPlease, check "{}" file at {}'.format(
                           os.path.split(bat_file)[1], max_folder))
-
 
         self.entry.focus()
 
