@@ -14,13 +14,17 @@ except ImportError:
     import tkFileDialog as filedialog
     import Tkinter as tk
 
+try:
+    FileNotFoundError
+except NameError: 
+    # for Python2
+    FileNotFoundError = IOError
 
 def trunkate_file(file):
     try:
         f = open(file, 'r+')
         f.truncate()
-    except Exception: 
-    # widen exception to make script runnable under Mac py2app with Python2
+    except FileNotFoundError: 
         pass
 
 # this values should be moved to preferences:
