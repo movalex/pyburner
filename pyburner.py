@@ -19,7 +19,8 @@ def trunkate_file(file):
     try:
         f = open(file, 'r+')
         f.truncate()
-    except Exception:
+    except Exception: 
+    # widen exception to make script runnable under Mac py2app with Python2
         pass
 
 # this values should be moved to preferences:
