@@ -53,7 +53,7 @@ class MainApplication(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.geometry('+300+100')
-        self.title('CSV Parser')
+        self.title('pyBurner')
         
         # text area frame
         frame1 = tk.Frame(self)
@@ -127,19 +127,20 @@ class MainApplication(tk.Tk):
         self.max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(VERSION)
         self.text.clear_help()
         self.servers = []
-        
+        self.sorted_servers = []
 
     def cleanup(self):
-        self.L2.config(text='')
-        self.entry.delete("0", tk.END)
         self.text.clear_help()
         self.restore_defaults()
 
     def restore_defaults(self):
+        self.L2.config(text='')
+        self.entry.delete("0", tk.END)
         self.job_name = False
         self.selected_server = False
         self.file_contents_list = []
         self.servers = []
+        self.sorted_servers = []
 
     def csv_open(self, *args):
         self.restore_defaults()
@@ -164,13 +165,13 @@ class MainApplication(tk.Tk):
                     self.servers.append(i[4])
                 else:
                     pass
-            sorted_servers = sorted(set(self.servers))
+            self.sorted_servers = sorted(set(self.servers))
             self.text.setText("Found {} servers in file:".format(
                               len(set(self.servers))))
-            for num, serv in enumerate(sorted_servers):
+            for num, serv in enumerate(self.sorted_servers):
                 self.text.setText('{}) {}'.format(num, serv))
             self.L2.config(text='0-{}'.format(
-                           len(sorted_servers)-1))
+                           len(self.sorted_servers)-1))
             self.entry.delete("0", tk.END)
             self.entry.focus()
         else:
@@ -181,8 +182,7 @@ class MainApplication(tk.Tk):
         self.server_num = self.entry.get()
         try:
             if int(self.server_num) >= 0:
-                self.selected_server = sorted(set(
-                                       self.servers))[int(self.server_num)]
+                self.selected_server = self.sorted_servers[int(self.server_num)]
                 self.text.setText('you\'ve selected server #{}'.format(
                                    self.server_num))
                 self.text.setText('\'{}\''.format(self.selected_server))
