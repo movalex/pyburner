@@ -2,7 +2,7 @@ from setuptools import setup
 
 APP = ['pyburner.py']
 DATA_FILES = []
-OPTIONS = {'argv_emulation': True}
+OPTIONS = {'argv_emulation': False}
 
 setup(
     app=APP,
