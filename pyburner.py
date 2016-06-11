@@ -249,12 +249,17 @@ class MainApplication(tk.Tk):
         filename, _ = os.path.splitext(max_file)
         bat_file = os.path.join(max_folder, '{}_rerender.bat'.format(filename))
         truncate_file(bat_file)
+        try:
+            ip_address = socket.gethostbyname(RENDERMANAGER)
+        except Exception:
+            self.text.setText('\nYou\'re not connected to local network')
+            return
         with open(bat_file, 'a') as bat:
             print(self.max_version, quoted_max_file, file=bat, end=' ')
             print('-frames:', file=bat, end='')
             for frame in self.return_frames():
                 print(frame, file=bat, end=',')
-            print(' -submit:', socket.gethostbyname(RENDERMANAGER),
+            print(' -submit:', ip_address,
                   file=bat, end='')
             print(' -jobname: {}_{}_rerender'.format(self.job_name,
                                                      self.selected_server),
@@ -267,10 +272,8 @@ class MainApplication(tk.Tk):
             self.var.set(0) # uncheck button to prevent multiple windows
         else:
             pass
-
         self.text.setText('Done!\nPlease, check "{}" file at {}'.format(
                           os.path.split(bat_file)[1], max_folder))
-
         self.entry.focus()
 
     def show_pref(self):
