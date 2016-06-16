@@ -224,7 +224,7 @@ class MainApplication(tk.Tk):
             norm_path = os.path.normpath(open_maxfile)
             self.make_bat(norm_path)
         else:
-            self.text.setText('Click "run" and choose .max file!')
+            self.text.setText('\nClick "run" and choose .max file!')
             return
 
     def add_quotes(self, txt):
