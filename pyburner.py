@@ -115,7 +115,7 @@ class MainApplication(tk.Tk):
                              command=self.csv_open,
                              accelerator="Ctrl+O")
         filemenu.add_command(label='Preferences', 
-                             command=self.show_pref)
+                             command=PrefWindow.open_prefs)
         filemenu.add_separator()
         filemenu.add_command(label='Exit', 
                              command=self.quit,
@@ -287,6 +287,15 @@ class MainApplication(tk.Tk):
     def quit(self, *args):
         sys.exit(0)
 
+
+class PrefWindow(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+    
+    def open_prefs():
+       pref=tk.Toplevel()
+       pref.geometry('400x250+780+100')
+       pref.title('Preferences')
 
 if __name__ == '__main__':
     app = MainApplication()
