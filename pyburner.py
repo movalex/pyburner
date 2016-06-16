@@ -9,16 +9,19 @@ import subprocess
 try:
     from tkinter import filedialog
     import tkinter as tk
+    import configparser as configparser
 except ImportError:
     # python 2
     import tkFileDialog as filedialog
     import Tkinter as tk
+    import ConfigParser as configparser
 
 try:
     FileNotFoundError
 except NameError: 
     # for Python2
     FileNotFoundError = IOError
+
 
 def truncate_file(file):
     try:
@@ -30,8 +33,9 @@ def truncate_file(file):
 # this values should be moved to preferences:
 PRIORITY = 100
 VERSION = 2014
-RENDERMANAGER = '2renderingserv'
-SCENELOOKUP = r'\\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes'
+RENDER_MANAGER = '2renderingserv'
+SCENE_LOOKUP = r'\\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes'
+
 
 class MyTextSettings(tk.Text):
 
@@ -43,10 +47,10 @@ class MyTextSettings(tk.Text):
         self.insert(tk.END, text+'\n')
         self.see(tk.END)
 
-    def clear(self, *args):
+    def clear(self):
         self.delete("1.0", tk.END)
         
-    def clear_help(self, *args):
+    def clear_help(self):
         self.clear()
         self.setText('Choose "File --> Open" or press "CTRL+o"')
         self.setText('to open .csv or .txt file')
@@ -82,10 +86,10 @@ class MainApplication(tk.Tk):
         self.entry = tk.Entry(frame2, width=7)
         self.entry.grid(row=1, column=2, sticky='w', padx=2)
 
-        #offset entry size for mac/win interface consistency
+        # offset entry size for mac/win interface consistency
         offset_size = None
         if platform.system() == 'Windows':
-            offset_size = 15 #stupid hardcode
+            offset_size = 15  # stupid hardcode
             self.entry.config(width=offset_size)
 
         button1 = tk.Button(frame2, text='submit', command=self.get_server_entry)
@@ -103,11 +107,11 @@ class MainApplication(tk.Tk):
         button_clear = tk.Button(frame2, text='clear', command=self.cleanup)
         button_clear.grid(row=3, column=2,columnspan=2, sticky='we')
         button_clear.config()
-        button3 = tk.Button(frame2, text='close', command=self.quit)
+        button3 = tk.Button(frame2, text='close', command=self.quit_app)
         button3.grid(row=4, column=2, columnspan=2, sticky='we')
         frame2.grid(row=1, column=0, sticky='we', padx=(5,0))
 
-        #file menu
+        # file menu
         menubar = tk.Menu(self)
         filemenu = tk.Menu(menubar, tearoff=0)
         self.config(menu=menubar)
@@ -117,14 +121,14 @@ class MainApplication(tk.Tk):
         filemenu.add_command(label='Preferences', 
                              command=PrefWindow.open_prefs)
         filemenu.add_separator()
-        filemenu.add_command(label='Exit', 
-                             command=self.quit,
+        filemenu.add_command(label='Exit',
+                             command=self.quit_app,
                              accelerator='Ctrl+Q')
         self.bind("<Control-o>", self.csv_open)
-        self.bind("<Control-q>", self.quit)
+        self.bind("<Control-q>", self.quit_app)
         menubar.add_cascade(label='File', menu=filemenu)
 
-        #default values
+        # default values
         self.os_name = platform.system()
         self.file_contents_list = []
         self.job_name = False
@@ -184,12 +188,12 @@ class MainApplication(tk.Tk):
             self.L2.config(text='')
 
     def get_server_entry(self, *args):
-        self.server_num = self.entry.get()
+        server_num = self.entry.get()
         try:
-            if int(self.server_num) >= 0:
-                self.selected_server = self.sorted_servers[int(self.server_num)]
+            if int(server_num) >= 0:
+                self.selected_server = self.sorted_servers[int(server_num)]
                 self.text.setText('you\'ve selected server #{}'.format(
-                                   self.server_num))
+                                   server_num))
                 self.text.setText('\'{}\''.format(self.selected_server))
                 self.text.setText(r'Now press "run" button (CTRL+r) to choose MAX file')
                 self.button2.focus()
@@ -213,11 +217,15 @@ class MainApplication(tk.Tk):
                 pass
 
     def choose_max_file(self):
-        openmaxfile = filedialog.askopenfilename(
-                  initialdir=SCENELOOKUP,
+        open_maxfile = filedialog.askopenfilename(
+                  initialdir=SCENE_LOOKUP,
                   title='Choose MAX file')
-        normFilePath = os.path.normpath(openmaxfile)
-        return normFilePath
+        if open_maxfile:
+            norm_path = os.path.normpath(open_maxfile)
+            self.make_bat(norm_path)
+        else:
+            self.text.setText('Click "run" and choose .max file!')
+            return
 
     def add_quotes(self, txt):
         return '"{}"'.format(txt)
@@ -231,26 +239,26 @@ class MainApplication(tk.Tk):
         else:
             pass
 
-    def run_app(self, *args):
+    def run_app(self):
         if self.job_name and self.selected_server:
             self.text.setText('\nThese frames will be re-rendered:')
             for frame in self.return_frames():
                 self.text.setFrames('{}, '.format(frame))
             self.text.setFrames('\n')
-            self.make_bat(self.choose_max_file())
-        elif not self.job_name: 
+            self.choose_max_file()
+        elif not self.job_name:
             self.text.setText("You should select jobs file first")
         elif not self.selected_server:
             self.text.setText("Enter server number and submit!")
 
-    def make_bat(self, maxfilepath):
-        quoted_max_file = self.add_quotes(maxfilepath)
-        max_folder, max_file = os.path.split(maxfilepath)
+    def make_bat(self, maxpath):
+        quoted_max_file = self.add_quotes(maxpath)
+        max_folder, max_file = os.path.split(maxpath)
         filename, _ = os.path.splitext(max_file)
         bat_file = os.path.join(max_folder, '{}_rerender.bat'.format(filename))
         truncate_file(bat_file)
         try:
-            ip_address = socket.gethostbyname(RENDERMANAGER)
+            ip_address = socket.gethostbyname(RENDER_MANAGER)
         except Exception:
             self.text.setText('\nYou\'re not connected to local network')
             return
@@ -269,22 +277,14 @@ class MainApplication(tk.Tk):
         if self.var.get() == 1:
             self.text.setText('\nOpening folder...\n')
             self.open_result(max_folder)
-            self.var.set(0) # uncheck button to prevent multiple windows
+            self.var.set(0)  # uncheck button to prevent multiple windows
         else:
             pass
         self.text.setText('Done!\nPlease, check "{}" file at {}'.format(
                           os.path.split(bat_file)[1], max_folder))
         self.entry.focus()
 
-    def show_pref(self):
-        preftext = "Here\'ll be preferences\nfor MAX version,\npriority slider,\nbat-file save folder settings"
-        pref = tk.Toplevel()
-        pref.geometry('400x250+780+100')
-        pref.title('Preferences')
-        info_label = tk.Label(pref, text=preftext, justify=tk.CENTER)
-        info_label.pack(side='top', padx=10, pady=50)
-
-    def quit(self, *args):
+    def quit_app(self, *args):
         sys.exit(0)
 
 
@@ -292,10 +292,10 @@ class PrefWindow(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
     
-    def open_prefs():
-       pref=tk.Toplevel()
-       pref.geometry('400x250+780+100')
-       pref.title('Preferences')
+    def open_prefs(self):
+        pref = tk.Toplevel()
+        pref.geometry('400x250+780+100')
+        pref.title('Preferences')
 
 if __name__ == '__main__':
     app = MainApplication()
