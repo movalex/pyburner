@@ -292,7 +292,7 @@ class PrefWindow(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
     
-    def open_prefs(self):
+    def open_prefs():
         pref = tk.Toplevel()
         pref.geometry('400x250+780+100')
         pref.title('Preferences')
