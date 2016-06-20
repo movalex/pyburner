@@ -39,11 +39,11 @@ SCENE_LOOKUP = r'\\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes'
 
 class MyTextSettings(tk.Text):
 
-    def setFrames(self, frame):
+    def set_frames(self, frame):
         self.insert(tk.END, frame)
         self.see(tk.END)
 
-    def setText(self, text):
+    def set_text(self, text):
         self.insert(tk.END, text+'\n')
         self.see(tk.END)
 
@@ -52,8 +52,8 @@ class MyTextSettings(tk.Text):
         
     def clear_help(self):
         self.clear()
-        self.setText('Choose "File --> Open" or press "CTRL+o"')
-        self.setText('to open .csv or .txt file')
+        self.set_text('Choose "File --> Open" or press "CTRL+o"')
+        self.set_text('to open .csv or .txt file')
         
 
 class MainApplication(tk.Tk):
@@ -169,16 +169,16 @@ class MainApplication(tk.Tk):
                 if len(i) == 1 and i[0][:4] == "Job:":
                     job_name = (i[0].split())
                     self.job_name = job_name[1]
-                    self.text.setText('Job name: {}'.format(self.job_name))
+                    self.text.set_text('Job name: {}'.format(self.job_name))
                 elif len(i) == 5 and i[4] != "Server":
                     self.servers.append(i[4])
                 else:
                     pass
             self.sorted_servers = sorted(set(self.servers))
-            self.text.setText("Found {} servers in file:".format(
+            self.text.set_text("Found {} servers in file:".format(
                               len(set(self.servers))))
             for num, serv in enumerate(self.sorted_servers):
-                self.text.setText('{}) {}'.format(num, serv))
+                self.text.set_text('{}) {}'.format(num, serv))
             self.L2.config(text='0-{}'.format(
                            len(self.sorted_servers)-1))
             self.entry.delete("0", tk.END)
@@ -192,15 +192,15 @@ class MainApplication(tk.Tk):
         try:
             if int(server_num) >= 0:
                 self.selected_server = self.sorted_servers[int(server_num)]
-                self.text.setText('you\'ve selected server #{}'.format(
+                self.text.set_text('you\'ve selected server #{}'.format(
                                    server_num))
-                self.text.setText('\'{}\''.format(self.selected_server))
-                self.text.setText(r'Now press "run" button (CTRL+r) to choose MAX file')
+                self.text.set_text('\'{}\''.format(self.selected_server))
+                self.text.set_text(r'Now press "run" button (CTRL+r) to choose MAX file')
                 self.button2.focus()
             else:
-                self.text.setText('enter positive number, dammit!')
+                self.text.set_text('enter positive number, dammit!')
         except (ValueError, IndexError) :
-            self.text.setText('enter correct number, please')
+            self.text.set_text('enter correct number, please')
 
     def return_frames(self):
         for _line in self.file_contents_list:
@@ -224,7 +224,7 @@ class MainApplication(tk.Tk):
             norm_path = os.path.normpath(open_maxfile)
             self.make_bat(norm_path)
         else:
-            self.text.setText('\nClick "run" and choose .max file!')
+            self.text.set_text('\nClick "run" and choose .max file!')
             return
 
     def add_quotes(self, txt):
@@ -241,15 +241,15 @@ class MainApplication(tk.Tk):
 
     def run_app(self):
         if self.job_name and self.selected_server:
-            self.text.setText('\nThese frames will be re-rendered:')
+            self.text.set_text('\nThese frames will be re-rendered:')
             for frame in self.return_frames():
-                self.text.setFrames('{}, '.format(frame))
-            self.text.setFrames('\n')
+                self.text.set_frames('{}, '.format(frame))
+            self.text.set_frames('\n')
             self.choose_max_file()
         elif not self.job_name:
-            self.text.setText("You should select jobs file first")
+            self.text.set_text("You should select jobs file first")
         elif not self.selected_server:
-            self.text.setText("Enter server number and submit!")
+            self.text.set_text("Enter server number and submit!")
 
     def make_bat(self, maxpath):
         quoted_max_file = self.add_quotes(maxpath)
@@ -260,7 +260,7 @@ class MainApplication(tk.Tk):
         try:
             ip_address = socket.gethostbyname(RENDER_MANAGER)
         except Exception:
-            self.text.setText('\nYou\'re not connected to local network')
+            self.text.set_text('\nYou\'re not connected to local network')
             return
         with open(bat_file, 'a') as bat:
             print(self.max_version, quoted_max_file, file=bat, end=' ')
@@ -275,17 +275,14 @@ class MainApplication(tk.Tk):
             print(' -priority:{}'.format(PRIORITY), file=bat)
             bat.close()
         if self.var.get() == 1:
-            self.text.setText('\nOpening folder...\n')
+            self.text.set_text('\nOpening folder...\n')
             self.open_result(max_folder)
             self.var.set(0)  # uncheck button to prevent multiple windows
         else:
             pass
-        self.text.setText('Done!\nPlease, check "{}" file at {}'.format(
+        self.text.set_text('Done!\nPlease, check "{}" file at {}'.format(
                           os.path.split(bat_file)[1], max_folder))
         self.entry.focus()
-
-    # def show_pref(self):
-    #     PrefWindow()
 
     def quit_app(self, *args):
         sys.exit(0)
