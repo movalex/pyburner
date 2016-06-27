@@ -30,6 +30,10 @@ def truncate_file(file):
     except FileNotFoundError: 
         pass
 
+
+def add_quotes(txt):
+    return '"{}"'.format(txt)
+
 # this values should be moved to preferences:
 PRIORITY = 100
 VERSION = 2014
@@ -227,8 +231,6 @@ class MainApplication(tk.Tk):
             self.text.set_text('\nClick "run" and choose .max file!')
             return
 
-    def add_quotes(self, txt):
-        return '"{}"'.format(txt)
         
     def open_result(self, folder):
         # show the bat-file folder in Windows Explorer or Finder
@@ -252,7 +254,7 @@ class MainApplication(tk.Tk):
             self.text.set_text("Enter server number and submit!")
 
     def make_bat(self, maxpath):
-        quoted_max_file = self.add_quotes(maxpath)
+        quoted_max_file = add_quotes(maxpath)
         max_folder, max_file = os.path.split(maxpath)
         filename, _ = os.path.splitext(max_file)
         bat_file = os.path.join(max_folder, '{}_rerender.bat'.format(filename))
