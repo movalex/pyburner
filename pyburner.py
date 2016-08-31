@@ -7,13 +7,14 @@ import platform
 import subprocess
 
 try:
-    from tkinter import filedialog
+    from tkinter import filedialog, messagebox
     import tkinter as tk
-    import configparser as configparser
+    import configparser
 except ImportError:
     # python 2
-    import tkFileDialog as filedialog
     import Tkinter as tk
+    import tkMessageBox as messagebox
+    import tkFileDialog as filedialog
     import ConfigParser as configparser
 
 try:
@@ -34,11 +35,28 @@ def truncate_file(file):
 def add_quotes(txt):
     return '"{}"'.format(txt)
 
-# this values should be moved to preferences:
-PRIORITY = 100
-VERSION = 2014
-RENDER_MANAGER = '2renderingserv'
-SCENE_LOOKUP = r'\\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes'
+
+def config_helper(section):
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    dict1 = {}
+    options = config.options(section)
+    for option in options:
+        try:
+            dict1[option] = config.get(section, option)
+            if dict1[option] == -1:
+                print("skip: %s" % option)
+        except:
+            print("exception on %s!" % option)
+            dict1[option] = None
+    return dict1
+
+# this values should be adjusted by preferences window:
+
+PRIORITY = config_helper('settings')['priority']
+VERSION = config_helper('settings')['version']
+RENDER_MANAGER = config_helper('settings')['manager']
+SCENE_LOOKUP = config_helper('settings')['path']
 
 
 class MyTextSettings(tk.Text):
@@ -231,7 +249,6 @@ class MainApplication(tk.Tk):
             self.text.set_text('\nClick "run" and choose .max file!')
             return
 
-        
     def open_result(self, folder):
         # show the bat-file folder in Windows Explorer or Finder
         if self.os_name == 'Darwin':
@@ -261,8 +278,9 @@ class MainApplication(tk.Tk):
         truncate_file(bat_file)
         try:
             ip_address = socket.gethostbyname(RENDER_MANAGER)
-        except Exception:
-            self.text.set_text('\nYou\'re not connected to local network')
+        except socket.gaierror:
+            self.text.set_text('\nCheck your local network connection')
+            messagebox.showerror('Network Error', 'Check your local network connection')   
             return
         with open(bat_file, 'a') as bat:
             print(self.max_version, quoted_max_file, file=bat, end=' ')
