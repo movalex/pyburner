@@ -51,13 +51,6 @@ def config_helper(section):
             dict1[option] = None
     return dict1
 
-# this values should be adjusted by preferences window:
-
-PRIORITY = config_helper('settings')['priority']
-VERSION = config_helper('settings')['version']
-RENDER_MANAGER = config_helper('settings')['manager']
-SCENE_LOOKUP = config_helper('settings')['path']
-
 
 class MyTextSettings(tk.Text):
 
@@ -140,8 +133,10 @@ class MainApplication(tk.Tk):
         filemenu.add_command(label='Open',
                              command=self.csv_open,
                              accelerator="Ctrl+O")
+        #filemenu.add_command(label='Preferences', 
+        #                     command=lambda:PrefWindow())
         filemenu.add_command(label='Preferences', 
-                             command=lambda:PrefWindow())
+                             command=OpenPrefs)
         filemenu.add_separator()
         filemenu.add_command(label='Exit',
                              command=self.quit_app,
@@ -155,7 +150,6 @@ class MainApplication(tk.Tk):
         self.file_contents_list = []
         self.job_name = False
         self.selected_server = False
-        self.max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(VERSION)
         self.text.clear_help()
         self.servers = []
         self.sorted_servers = []
@@ -239,6 +233,7 @@ class MainApplication(tk.Tk):
                 pass
 
     def choose_max_file(self):
+        SCENE_LOOKUP = config_helper('settings')['path']
         open_maxfile = filedialog.askopenfilename(
                   initialdir=SCENE_LOOKUP,
                   title='Choose MAX file')
@@ -250,7 +245,7 @@ class MainApplication(tk.Tk):
             return
 
     def open_result(self, folder):
-        # show the bat-file folder in Windows Explorer or Finder
+        # show the bat-file folder in Windows Explorer or macOS Finder
         if self.os_name == 'Darwin':
             subprocess.Popen(['open', folder])
         elif self.os_name == 'Windows':
@@ -271,6 +266,10 @@ class MainApplication(tk.Tk):
             self.text.set_text("Enter server number and submit!")
 
     def make_bat(self, maxpath):
+        PRIORITY = config_helper('settings')['priority']
+        RENDER_MANAGER = config_helper('settings')['manager']
+        VERSION = config_helper('settings')['version']
+        max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(VERSION)
         quoted_max_file = add_quotes(maxpath)
         max_folder, max_file = os.path.split(maxpath)
         filename, _ = os.path.splitext(max_file)
@@ -279,11 +278,12 @@ class MainApplication(tk.Tk):
         try:
             ip_address = socket.gethostbyname(RENDER_MANAGER)
         except socket.gaierror:
-            self.text.set_text('\nCheck your local network connection')
-            messagebox.showerror('Network Error', 'Check your local network connection')   
+            err_message = 'Check your render manager network connection'
+            self.text.set_text('\n{}'.format(err_message))
+            messagebox.showerror('Network Error', err_message)   
             return
         with open(bat_file, 'a') as bat:
-            print(self.max_version, quoted_max_file, file=bat, end=' ')
+            print(max_version, quoted_max_file, file=bat, end=' ')
             print('-frames:', file=bat, end='')
             for frame in self.return_frames():
                 print(frame, file=bat, end=',')
@@ -293,7 +293,6 @@ class MainApplication(tk.Tk):
                                                      self.selected_server),
                                                      file=bat, end='')
             print(' -priority:{}'.format(PRIORITY), file=bat)
-            bat.close()
         if self.var.get() == 1:
             self.text.set_text('\nOpening folder...\n')
             self.open_result(max_folder)
@@ -305,15 +304,25 @@ class MainApplication(tk.Tk):
         self.entry.focus()
 
     def quit_app(self, *args):
+        print('bye')
         sys.exit(0)
 
+class OpenPrefs(MainApplication):
+    """docstring for OpenPrefs"""
 
-class PrefWindow(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        self.geometry('400x250+780+100')
-        self.title('Preferences')
-    
+    def __init__(self, *args):
+        t = tk.Toplevel()
+        t.wm_title('Preferences')
+        t.wm_geometry('400x250+780+100')
+        enter_label = tk.Label(t, text='enter server manager name')
+        enter_label.grid(row=0, column=0)
+        serv_entry = tk.Entry(t)
+        serv_entry.insert(tk.END, config_helper('settings')['manager'])
+        serv_entry.focus()
+        serv_entry.select_range(0, tk.END)
+        serv_entry.grid(row=0, column=1)
+        
+
 
 if __name__ == '__main__':
     app = MainApplication()
