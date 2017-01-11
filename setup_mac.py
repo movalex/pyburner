@@ -8,6 +8,7 @@ setup(
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
+    DATA_FILES=["config.ini"],
     setup_requires=['py2app'],
 )
 
