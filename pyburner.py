@@ -23,6 +23,8 @@ except NameError:
     # for Python2
     FileNotFoundError = IOError
 
+os_name = platform.system()
+
 
 def truncate_file(file):
     try:
@@ -39,17 +41,17 @@ def add_quotes(txt):
 def config_helper(section):
     config = configparser.ConfigParser()
     config.read('config.ini')
-    dict1 = {}
+    config_dict = {}
     options = config.options(section)
     for option in options:
         try:
-            dict1[option] = config.get(section, option)
-            if dict1[option] == -1:
+            config_dict[option] = config.get(section, option)
+            if config_dict[option] == -1:
                 print("skip: %s" % option)
         except:
             print("exception on %s!" % option)
-            dict1[option] = None
-    return dict1
+            config_dict[option] = None
+    return config_dict
 
 
 class MyTextSettings(tk.Text):
@@ -133,8 +135,6 @@ class MainApplication(tk.Tk):
         filemenu.add_command(label='Open',
                              command=self.csv_open,
                              accelerator="Ctrl+O")
-        #filemenu.add_command(label='Preferences', 
-        #                     command=lambda:PrefWindow())
         filemenu.add_command(label='Preferences', 
                              command=OpenPrefs)
         filemenu.add_separator()
@@ -146,13 +146,12 @@ class MainApplication(tk.Tk):
         menubar.add_cascade(label='File', menu=filemenu)
 
         # default values
-        self.os_name = platform.system()
         self.file_contents_list = []
         self.job_name = False
         self.selected_server = False
-        self.text.clear_help()
         self.servers = []
         self.sorted_servers = []
+        self.text.clear_help()
 
     def cleanup(self):
         self.text.clear_help()
@@ -211,7 +210,7 @@ class MainApplication(tk.Tk):
                 self.text.set_text('you\'ve selected server #{}'.format(
                                    server_num))
                 self.text.set_text('\'{}\''.format(self.selected_server))
-                self.text.set_text(r'Now press "run" button (CTRL+r) to choose MAX file')
+                self.text.set_text(r'Now press "run" button (CTRL+r) to choose .max file you wish to re-render')
                 self.button2.focus()
             else:
                 self.text.set_text('enter positive number, dammit!')
@@ -246,9 +245,9 @@ class MainApplication(tk.Tk):
 
     def open_result(self, folder):
         # show the bat-file folder in Windows Explorer or macOS Finder
-        if self.os_name == 'Darwin':
+        if os_name == 'Darwin':
             subprocess.Popen(['open', folder])
-        elif self.os_name == 'Windows':
+        elif os_name == 'Windows':
             subprocess.Popen('explorer /open, {}'.format(folder))
         else:
             pass
@@ -278,7 +277,7 @@ class MainApplication(tk.Tk):
         try:
             ip_address = socket.gethostbyname(RENDER_MANAGER)
         except socket.gaierror:
-            err_message = 'Check your render manager network connection'
+            err_message = 'Check your network connection.\n Is your render server available?'
             self.text.set_text('\n{}'.format(err_message))
             messagebox.showerror('Network Error', err_message)   
             return
@@ -299,12 +298,11 @@ class MainApplication(tk.Tk):
             self.var.set(0)  # uncheck button to prevent multiple windows
         else:
             pass
-        self.text.set_text('Done!\nPlease, check "{}" file at {}'.format(
+        self.text.set_text('Done!\nPlease, check "{}"\nat {}'.format(
                           os.path.split(bat_file)[1], max_folder))
         self.entry.focus()
 
     def quit_app(self, *args):
-        print('bye')
         sys.exit(0)
 
 class OpenPrefs(MainApplication):
