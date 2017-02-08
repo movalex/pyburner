@@ -5,6 +5,7 @@ tests/
 .DS_Store
 .stfolder
 *.pyc
+test_*
 
 # Distribution / packaging
 
