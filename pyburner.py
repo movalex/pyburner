@@ -8,7 +8,6 @@ import platform
 import subprocess
 import tkSimpleDialog
 
-
 try:
     # python 3
     from tkinter import filedialog, messagebox
@@ -72,8 +71,8 @@ def config_writer(section, option, value):
 
 def test_network(rmanager):
     try:
-        ip_address = socket.gethostbyname(rmanager)
-        return ip_address
+        ip_ = socket.gethostbyname(rmanager)
+        return ip_
     except socket.gaierror:
         err_message = 'Check your network connection.\n Is your render server available?'
         messagebox.showerror('Network Error', err_message)
@@ -111,7 +110,7 @@ class MainApplication(tk.Tk):
         self.geometry('+300+100')
         self.title('pyBurner')
         self.configure(bg=bgcolor)
-        
+
         if os_name == 'Darwin':
             self.customFont = Font(family="Lucida Console", size=10)
             txt_area = [18,50]
@@ -140,10 +139,9 @@ class MainApplication(tk.Tk):
         frame2.configure(background=bgcolor, highlightthickness=0)
         frame2.grid(sticky='we', padx=(5,0), pady=10)
         self.L1 = tk.Label(frame2, font=self.customFont)
-        self.L1.grid_propagate(False)
-        self.L1.grid(row=1, column=0, sticky='w')
-        self.entry = tk.Entry(frame2, width=5, font=self.customFont)
-        self.entry.grid(row=1, column=2, sticky='w', padx=(28,6))
+        self.L1.grid(row=1, column=0, sticky='w', padx=(0, 20))
+        self.entry = tk.Entry(frame2, width=4, font=self.customFont)
+        self.entry.grid(row=1, column=2, sticky='w', padx=(0,6))
 
         # buttons area
         submit_button = tk.Button(frame2, text='submit', command=self.get_server_entry, font=self.customFont)
@@ -201,24 +199,28 @@ class MainApplication(tk.Tk):
 
     def load_defaults(self):
         self.var.set(1)
-        self.L1.config(text='press CRTL+L to load file',)
+        self.L1.config(text='press CRTL+L to load file ')
         self.entry.delete("0", tk.END)
         self.job_name = None
         self.selected_server = None
         self.file_contents = []
         self.servers = []
         self.all_servers = []
+        self.the_csv_file = None
+        self.read_config()
+
+    def read_config(self):
         self.SCENE_LOOKUP = config_reader('settings')['path']
         self.PRIORITY = config_reader('settings')['priority']
         self.RENDER_MANAGER = config_reader('settings')['manager']
         self.VERSION = config_reader('settings')['version']
-        self.the_csv_file = None
 
     def show_all(self):
 
         if self.the_csv_file:
             window1=tk.Toplevel(bg=bgcolor)
             window1.geometry('+680+380')
+            window1.grab_set()
             sframe= tk.Frame(window1, bg=bgcolor)
             txt_all = MyTextSettings(sframe, bg=bgcolor,wrap=tk.WORD, width=40, fg=fgcolor, highlightthickness=0)
             
@@ -257,12 +259,12 @@ class MainApplication(tk.Tk):
     def get_server_entry(self, *args):
         server_num = self.entry.get()
         try:
-            if int(server_num) >= 0:
+            if int(server_num.strip()) >= 0:
                 self.server_frames_list = list(return_frames(self.the_csv_file, self.all_servers[int(server_num)]))
                 self.selected_server = self.all_servers[int(server_num)]
                 self.text.set_text('you\'ve selected server #{}'.format(server_num))
                 self.text.set_text('\'{}\''.format(self.selected_server))
-                self.text.set_text(r'Now press "run" button (CTRL+r) to choose .max file you wish to re-render')
+                self.text.set_text(r'Now press "run" button (CTRL+r) to choose .max file')
                 self.run_button.focus()
             else:
                 self.text.set_text('enter positive number, dammit!')
@@ -274,14 +276,17 @@ class MainApplication(tk.Tk):
                   initialdir=self.SCENE_LOOKUP,
                   title='Choose MAX file')
         if open_maxfile:
-            norm_path = os.path.normpath(open_maxfile)
-            self.make_bat(norm_path)
+            self.ip_address = test_network(self.RENDER_MANAGER)
+            if self.ip_address:
+                norm_path = os.path.normpath(open_maxfile)
+                self.make_bat(norm_path)
+            else: self.text.set_text('\nCheck server settings in preferences')
         else:
             self.text.set_text('\nClick "run" and choose .max file!')
             return
 
     def open_result(self, folder):
-        # show the bat-file folder in Windows Explorer or macOS Finder
+        # show the result folder in Windows Explorer or macOS Finder
         if os_name == 'Darwin':
             subprocess.Popen(['open', folder])
         elif os_name == 'Windows':
@@ -289,7 +294,8 @@ class MainApplication(tk.Tk):
         else:
             pass
 
-    def run_app(self, *args):
+    def run_app(self, event=None):
+        self.read_config()
         if self.job_name and self.selected_server:
             self.text.set_text('\nThese frames will be re-rendered:')
             for frame in self.server_frames_list:
@@ -308,13 +314,12 @@ class MainApplication(tk.Tk):
         filename, _ = os.path.splitext(max_file)
         bat_file = os.path.join(max_folder, '{}_{}_rerender.bat'.format(filename, self.selected_server))
         truncate_file(bat_file)
-        ip_address = test_network(self.RENDER_MANAGER)
         with open(bat_file, 'a') as bat:
             print(max_version, quoted_max_file, file=bat, end=' ')
             print('-frames:', file=bat, end='')
             for frame in self.server_frames_list:
                 print(frame, file=bat, end=',')
-            print(' -submit:', ip_address,
+            print(' -submit:', self.ip_address,
                   file=bat, end='')
             print(' -jobname: {}_{}_rerender'.format(self.job_name,
                                                      self.selected_server),
@@ -323,7 +328,7 @@ class MainApplication(tk.Tk):
         if self.var.get() == 1:
             self.text.set_text('\nOpening folder...\n')
             self.open_result(max_folder)
-            self.var.set(0)  # uncheck button to prevent multiple windows
+            self.var.set(0)  # uncheck button to prevent multiple windows when re-run
         else:
             pass
         self.text.set_text('Done!\nPlease, check "{}" at {}'.format(
@@ -332,34 +337,41 @@ class MainApplication(tk.Tk):
 
     def quit_app(self, *args):
         sys.exit(0)
+        
 
+class MyLabel(tk.Label):
+    def __init__(self, *args, **kwargs):
+        tk.Label.__init__(self, *args, **kwargs)
+        self.configure(bg=bgcolor, fg=fgcolor)
+        
 
 class OpenPrefs(tk.Toplevel):
 
     def __init__(self):
         tk.Toplevel.__init__(self)
-        manager = config_reader('settings')['manager']
-        body=tk.Frame(self, bg=bgcolor)
-        body.grid(pady=15, padx=20)
         self.transient()
-        self.initial_focus = body
-        self.initial_focus.focus_set()
-        self.config(bg=bgcolor, takefocus=True)
         self.title('Preferences')
+        self.body=tk.Frame(self, bg=bgcolor)
+        self.body.grid(pady=15, padx=20)
+        self.body.focus_set()
+        self.grab_set()
+        self.config(bg=bgcolor, takefocus=True)
         self.geometry('+680+100')
-        enter_label = tk.Label(body, text='render manager: ')
-        enter_label.configure(bg=bgcolor, fg=fgcolor)
+        enter_label = MyLabel(self.body, text='render manager: ')
         enter_label.grid(row=0, column=0, sticky='w')
-        self.ip_label = tk.Label(body, text='', bg=bgcolor, fg=fgcolor)
+        self.ip_label = MyLabel(self.body, text='')
         self.ip_label.grid(column=1, sticky='w')
-        self.serv_entry = tk.Entry(body)
-        self.serv_entry.insert(tk.END, manager)
+        self.serv_entry = tk.Entry(self.body)
         self.serv_entry.configure(bg='#535353', fg=fgcolor, width=15)
         self.serv_entry.grid(row=0, column=1,  sticky='we')
-        self.sumbit_manager = tk.Button(body, text='test', command=lambda:self.get_manager('manager'))
+        self.sumbit_manager = tk.Button(self.body, text='test', command=lambda:self.get_option('manager'))
+        self.sumbit_manager.configure(highlightbackground=bgcolor)
         self.sumbit_manager.grid(row=0, column=2, sticky='we', padx=(5,0))
+        manager = config_reader('settings')['manager']
+        self.serv_entry.insert(tk.END, manager)
 
-    def get_manager(self, option):
+
+    def get_option(self, option):
         ipaddress = test_network(self.serv_entry.get())
         if not ipaddress:            
             pass

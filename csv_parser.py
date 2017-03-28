@@ -1,7 +1,7 @@
 from __future__ import print_function
 import csv
 
-test_file = 'neon9.csv'
+test_file = 'neon9.txt'
 
 
 def parse_it(file_):
