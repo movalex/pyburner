@@ -8,13 +8,13 @@ import os
 
 class Dialog(tk.Toplevel):
 
-    def __init__(self,  parent, title = None):
-        tk.Toplevel.__init__(self, parent)
+    def __init__(self, title = None):
+
+        tk.Toplevel.__init__(self)
         self.transient()
         
         if title:
             self.title(title)
-        self.parent = parent
         
         self.result = None
         body = tk.Frame(self)
@@ -27,10 +27,7 @@ class Dialog(tk.Toplevel):
             self.initial_focus = self
 
         self.protocol("WM_DELETE_WINDOW", self.cancel)
-        #self.geometry("+100+400")
-        
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
+        self.geometry("+100+400")
         self.initial_focus.focus_set()
         self.wait_window(self)
 
@@ -69,6 +66,7 @@ class Dialog(tk.Toplevel):
         self.cancel()
 
     def cancel(self, event=None):
+
         # put focus back to the window
         self.focus_set()
         self.destroy()
@@ -76,7 +74,9 @@ class Dialog(tk.Toplevel):
     # command hooks
 
     def validate(self):
+
         return 1 # override
 
     def apply(self):
+
         pass # override
