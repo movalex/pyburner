@@ -6,7 +6,7 @@ import csv
 import socket
 import platform
 import subprocess
-import tkSimpleDialog
+import tkPopup
 
 try:
     # python 3
@@ -92,7 +92,8 @@ class MyTextSettings(tk.Text):
             myfont = Font(family="Lucida Console", size=11)
         elif os_name == 'Windows':
             myfont = Font(family="Consolas", size=9)
-        self.configure(font=myfont)
+        self.configure(font=myfont, bg=bgcolor, wrap=tk.WORD, 
+                        fg=fgcolor, highlightthickness=0)
 
     def clear_all(self):
         self.delete("1.0", tk.END)
@@ -100,6 +101,12 @@ class MyTextSettings(tk.Text):
     def clear_help(self):
         self.clear_all()
         self.set_text('Use "File --> Open" to choose .csv or .txt file')
+
+
+class MyLabel(tk.Label):
+    def __init__(self, *args, **kwargs):
+        tk.Label.__init__(self, *args, **kwargs)
+        self.configure(bg=bgcolor, fg=fgcolor, highlightthickness=0)
 
 
 class MainApplication(tk.Tk):
@@ -127,33 +134,29 @@ class MainApplication(tk.Tk):
         self.text = MyTextSettings(frame1,
                                    height=txt_area[0], 
                                    width=txt_area[1],
-                                   wrap=tk.WORD,
                                    yscrollcommand=scrollbar.set)
         self.text.tag_configure('txt_indent', lmargin1=5)
         self.text.pack(side=tk.LEFT, expand=True)
-        scrollbar.configure(highlightcolor=bgcolor, command=self.text.yview)      
+        scrollbar.configure(command=self.text.yview)      
         scrollbar.pack(side=tk.LEFT, fill=tk.Y, expand=False)
         
         # labels area
         frame2 = tk.Frame(self)
         frame2.configure(background=bgcolor, highlightthickness=0)
         frame2.grid(sticky='we', padx=(5,0), pady=10)
-        self.L1 = tk.Label(frame2, font=self.customFont)
+        self.L1 = MyLabel(frame2, font=self.customFont)
         self.L1.grid(row=1, column=0, sticky='w', padx=(0, 20))
         self.entry = tk.Entry(frame2, width=4, font=self.customFont)
         self.entry.grid(row=1, column=2, sticky='w', padx=(0,6))
 
         # buttons area
         submit_button = tk.Button(frame2, text='submit', command=self.get_server_entry, font=self.customFont)
-        submit_button.configure(highlightbackground=bgcolor)
         submit_button.grid(row=1, column=3, padx=(0,3), sticky='w')
         self.bind('<Return>', self.get_server_entry)
         self.run_button = tk.Button(frame2, text='run', command=self.run_app, font=self.customFont)
-        self.run_button.configure(highlightbackground=bgcolor)
         self.run_button.grid(row=1, column=4, padx=(0,3))
         self.bind('<Control-r>', self.run_app)
         reset_button = tk.Button(frame2, text='reset', command=self.cleanup, font=self.customFont)
-        reset_button.configure(highlightbackground=bgcolor)
         reset_button.grid(row=1, column=5, sticky='we')
         self.var = tk.IntVar()
         checkbutton1 = tk.Checkbutton(frame2,
@@ -163,15 +166,13 @@ class MainApplication(tk.Tk):
                                       font=self.customFont)
         checkbutton1.configure(height=1,  fg="#a7a7a7")
         checkbutton1.grid(row=2, column=0, sticky='w')
-        showall_button = tk.Button(frame2, text='all jobs', highlightbackground=bgcolor, command=self.show_all)
+        showall_button = tk.Button(frame2, text='all jobs', 
+                                   command=self.show_all)
         showall_button.grid(row=2, column=3, sticky='w')
         showall_button.config(font=self.customFont)
         close_button = tk.Button(frame2, text='close', command=self.quit_app, font=self.customFont)
-        close_button.configure(highlightbackground=bgcolor)
         close_button.grid(row=2, column=4, columnspan=2, sticky='we')
-        self.L1.configure(background=bgcolor, foreground=fgcolor, highlightthickness=0)
         self.entry.configure(background="#535353", foreground=fgcolor, highlightthickness=0)
-        self.text.configure(foreground=fgcolor, background=bgcolor, highlightthickness=1)
 
         # file menu
         menubar = tk.Menu(self)
@@ -181,7 +182,7 @@ class MainApplication(tk.Tk):
                              command=self.csv_open,
                              accelerator="Ctrl+L")
         filemenu.add_command(label='Preferences', 
-                             command=OpenPrefs)
+                             command=self.preferences)
         filemenu.add_separator()
         filemenu.add_command(label='Exit',
                              command=self.quit_app,
@@ -216,23 +217,13 @@ class MainApplication(tk.Tk):
         self.VERSION = config_reader('settings')['version']
 
     def show_all(self):
-
         if self.the_csv_file:
-            window1=tk.Toplevel(bg=bgcolor)
-            window1.geometry('+680+380')
-            window1.grab_set()
-            sframe= tk.Frame(window1, bg=bgcolor)
-            txt_all = MyTextSettings(sframe, bg=bgcolor,wrap=tk.WORD, width=40, fg=fgcolor, highlightthickness=0)
-            
-            for item in servers_sorted(self.the_csv_file):
-                txt_all.set_text(item)
-                for frame in list(return_frames(self.the_csv_file, item)):
-                    txt_all.set_frames('{}, '.format(frame))
-                txt_all.set_frames('\n')
-            txt_all.grid()
-            sframe.grid(padx=(10,0))
+            ShowAllWindow('all frames', file=self.the_csv_file)
         else:
             self.text.set_text('open file first')
+
+    def preferences(self):
+        OpenPrefs('Preferences')
     
     def csv_open(self, *args):
         self.text.clear_all()
@@ -248,9 +239,8 @@ class MainApplication(tk.Tk):
             self.text.set_text("Found {} servers in file:".format(
                               len(self.all_servers)))
             for num, serv in enumerate(self.all_servers):
-                self.text.set_text('{}) {}'.format(num, serv))
-            #self.L2.config(text='0-{}'.format(len(self.all_servers)-1))
-            self.L1.configure(text='Enter server number (0-{})'.format(len(self.all_servers)-1))
+                self.text.set_text('{}) {}'.format(num+1, serv))
+            self.L1.configure(text='Enter server number (1-{})'.format(len(self.all_servers)))
             self.entry.delete("0", tk.END)
             self.entry.focus()
         else:
@@ -259,16 +249,16 @@ class MainApplication(tk.Tk):
     def get_server_entry(self, *args):
         server_num = self.entry.get()
         try:
-            if int(server_num.strip()) >= 0:
+            if int(server_num.strip()) > 0:
                 self.server_frames_list = list(return_frames(self.the_csv_file, self.all_servers[int(server_num)]))
-                self.selected_server = self.all_servers[int(server_num)]
+                self.selected_server = self.all_servers[int(server_num)-1]
                 self.text.set_text('you\'ve selected server #{}'.format(server_num))
                 self.text.set_text('\'{}\''.format(self.selected_server))
                 self.text.set_text(r'Now press "run" button (CTRL+r) to choose .max file')
                 self.run_button.focus()
             else:
-                self.text.set_text('enter positive number, dammit!')
-        except (ValueError, IndexError) :
+                self.text.set_text('enter number greater than zero')
+        except (ValueError, IndexError):
             self.text.set_text('enter correct number, please')
 
     def choose_max_file(self):
@@ -312,7 +302,7 @@ class MainApplication(tk.Tk):
         quoted_max_file = add_quotes(maxpath)
         max_folder, max_file = os.path.split(maxpath)
         filename, _ = os.path.splitext(max_file)
-        bat_file = os.path.join(max_folder, '{}_{}_rerender.bat'.format(filename, self.selected_server))
+        bat_file = os.path.join(max_folder, '{}_{}.bat'.format(filename, self.selected_server))
         truncate_file(bat_file)
         with open(bat_file, 'a') as bat:
             print(max_version, quoted_max_file, file=bat, end=' ')
@@ -321,7 +311,7 @@ class MainApplication(tk.Tk):
                 print(frame, file=bat, end=',')
             print(' -submit:', self.ip_address,
                   file=bat, end='')
-            print(' -jobname: {}_{}_rerender'.format(self.job_name,
+            print(' -jobname: {}_{}'.format(self.job_name,
                                                      self.selected_server),
                                                      file=bat, end='')
             print(' -priority:{}'.format(self.PRIORITY), file=bat)
@@ -336,40 +326,11 @@ class MainApplication(tk.Tk):
         self.entry.focus()
 
     def quit_app(self, *args):
+        print('bye')
         sys.exit(0)
         
 
-class MyLabel(tk.Label):
-    def __init__(self, *args, **kwargs):
-        tk.Label.__init__(self, *args, **kwargs)
-        self.configure(bg=bgcolor, fg=fgcolor)
-        
-
-class OpenPrefs(tk.Toplevel):
-
-    def __init__(self):
-        tk.Toplevel.__init__(self)
-        self.transient()
-        self.title('Preferences')
-        self.body=tk.Frame(self, bg=bgcolor)
-        self.body.grid(pady=15, padx=20)
-        self.body.focus_set()
-        self.grab_set()
-        self.config(bg=bgcolor, takefocus=True)
-        self.geometry('+680+100')
-        enter_label = MyLabel(self.body, text='render manager: ')
-        enter_label.grid(row=0, column=0, sticky='w')
-        self.ip_label = MyLabel(self.body, text='')
-        self.ip_label.grid(column=1, sticky='w')
-        self.serv_entry = tk.Entry(self.body)
-        self.serv_entry.configure(bg='#535353', fg=fgcolor, width=15)
-        self.serv_entry.grid(row=0, column=1,  sticky='we')
-        self.sumbit_manager = tk.Button(self.body, text='test', command=lambda:self.get_option('manager'))
-        self.sumbit_manager.configure(highlightbackground=bgcolor)
-        self.sumbit_manager.grid(row=0, column=2, sticky='we', padx=(5,0))
-        manager = config_reader('settings')['manager']
-        self.serv_entry.insert(tk.END, manager)
-
+class OpenPrefs(tkPopup.Popup):
 
     def get_option(self, option):
         ipaddress = test_network(self.serv_entry.get())
@@ -379,37 +340,52 @@ class OpenPrefs(tk.Toplevel):
             config_writer('settings', option, self.serv_entry.get())
             self.ip_label.config(text=ipaddress)
 
-
-class MyDialog(tkSimpleDialog.Dialog):
-
     def body(self, master):
+        #self.grid(pady=15, padx=20)
+        self.geometry('+680+100')
+        self.config(bg=bgcolor, takefocus=True, padx=20, pady=5)
+        canv = tk.Frame(self)
+        enter_label = MyLabel(canv, text='render manager: ')
+        enter_label.grid(row=0, column=0, sticky='w')
+        self.ip_label = MyLabel(canv, text='')
+        self.ip_label.grid(column=1, sticky='w')
+        self.serv_entry = tk.Entry(canv)
+        self.serv_entry.configure(bg='#535353', fg=fgcolor, width=15)
+        self.serv_entry.grid(row=0, column=1,  sticky='we')
+        self.sumbit_manager = tk.Button(canv, text='test', command=lambda:self.get_option('manager'))
+        self.sumbit_manager.configure(highlightbackground=bgcolor)
+        self.sumbit_manager.grid(row=0, column=2, sticky='we', padx=(5,0))
+        manager = config_reader('settings')['manager']
+        self.serv_entry.insert(tk.END, manager)
+        canv.config(bg=bgcolor)
+        canv.pack()
+        self.buttonbox(bgcolor)
+        
 
-        tk.Label(master, text="First:").grid(row=0)
-        tk.Label(master, text="Second:").grid(row=1)
+class ShowAllWindow(tkPopup.Popup):
 
-        self.e1 = tk.Entry(master)
-        self.e2 = tk.Entry(master)
+    def body(self, master, file):
+        self.geometry('+680+380')
+        self.resizable(0,0)
+        sframe= tk.Frame(self, bg=bgcolor, highlightthickness=0)
+        sframe.pack()
+        sb1 = tk.Scrollbar(sframe)
+        txt_all = MyTextSettings(sframe, width=40, 
+                                yscrollcommand=sb1.set)
+        txt_all.pack(side=tk.LEFT, expand=True)
+        sb1.configure(highlightcolor=bgcolor, command=txt_all.yview)
+        sb1.pack(side=tk.LEFT, fill=tk.Y, expand=False)
 
-        self.e1.grid(row=0, column=1)
-        self.e2.grid(row=1, column=1)
-        return self.e1 # initial focus
-
-    def validate(self):
-        try:
-            first = int(self.e1.get())
-            second = int(self.e2.get())
-            self.result = first, second
-            return 1
-        except ValueError:
-            print('Enter numbers')
-            return 0
-
-    def apply(self):
-        n,m = self.result
-        print(n,m)
+        for item in servers_sorted(file):
+            txt_all.set_text(item)
+            for frame in list(return_frames(file, item)):
+                txt_all.set_frames('{}, '.format(frame))
+            txt_all.set_text('\n')
+        self.buttonbox(bgcolor, pad=20)
 
         
 if __name__ == '__main__':
     app = MainApplication()
     app.resizable(width=tk.FALSE, height=tk.FALSE)
     app.mainloop()
+    

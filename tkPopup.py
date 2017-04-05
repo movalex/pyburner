@@ -1,56 +1,49 @@
 try:
     import tkinter as tk 
 except ImportError:
-    # python 2
-    import Tkinter as tk
+    import Tkinter as tk     # python 2
 
-import os
 
-class Dialog(tk.Toplevel):
+class Popup(tk.Toplevel):
 
-    def __init__(self, title = None):
+    def __init__(self, title=None, *args, **kwargs):
 
         tk.Toplevel.__init__(self)
-        self.transient()
-        
-        if title:
-            self.title(title)
-        
-        self.result = None
-        body = tk.Frame(self)
-        self.initial_focus = self.body(body)
-        body.pack(padx=5, pady=5)
-        self.buttonbox()
-        self.grab_set()
-        
+        tkbody = tk.Frame(self)
+        self.initial_focus = self.body(tkbody, *args, **kwargs)
         if not self.initial_focus:
             self.initial_focus = self
-
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
-        self.geometry("+100+400")
         self.initial_focus.focus_set()
+        if title:
+            self.title(title)
+        self.transient()
+        self.result = None
+        #self.buttonbox(color)
+        self.grab_set()
+        self.protocol("WM_DELETE_WINDOW", self.cancel)
         self.wait_window(self)
 
     # construction hooks
 
     def body(self, master):
+        
         # create dialog body.  return widget that should have
         # initial focus.  this method should be overridden
-
         pass
 
-    def buttonbox(self):
-        # add standard button box. override if you don't want the
-        # standard buttons
+    def buttonbox(self, color, pad=0):
 
-        box = tk.Frame(self)
-        w = tk.Button(box, text="OK", width=10, command=self.ok, default=tk.ACTIVE)
-        w.pack(side=tk.LEFT, padx=5, pady=5)
-        w = tk.Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=tk.LEFT, padx=5, pady=5)
+        # add standard button box. 
+        # override if you don't want the standard buttons
+        bbox = tk.Frame(self)
+        but2 = tk.Button(bbox, text="Cancel", width=7, command=self.cancel)
+        but2.pack(side=tk.RIGHT, padx=(5,pad), pady=5)
+        but1 = tk.Button(bbox, text="OK", width=7, command=self.ok, default=tk.ACTIVE)
+        but1.pack(side=tk.RIGHT, padx=5, pady=5)
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
-        box.pack()
+        bbox.configure(bg=color, highlightbackground="#443322")
+        bbox.pack(fill=tk.X)
 
     # standard button semantics
 

@@ -50,12 +50,5 @@ def print_all_jobs(file_):
         print('\n')
 
 
-#def make_dict(file_):
-#    d = {}
-#    for i in servers_sorted(file_):
-#        d[i] = list(return_frames(file_, i))
-#    return d.items()
-
-
 if __name__ == '__main__':
     print_all_jobs(test_file)
