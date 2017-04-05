@@ -332,40 +332,50 @@ class MainApplication(tk.Tk):
 
 class OpenPrefs(tkPopup.Popup):
 
-    def get_option(self, option):
-        ipaddress = test_network(self.serv_entry.get())
-        if not ipaddress:            
-            pass
-        else:
-            config_writer('settings', option, self.serv_entry.get())
-            self.ip_label.config(text=ipaddress)
-
     def body(self, master):
-        #self.grid(pady=15, padx=20)
         self.geometry('+680+100')
         self.config(bg=bgcolor, takefocus=True, padx=20, pady=5)
-        canv = tk.Frame(self)
-        enter_label = MyLabel(canv, text='render manager: ')
+        window_frame = tk.Frame(self)
+        enter_label = MyLabel(window_frame, text='render manager: ')
         enter_label.grid(row=0, column=0, sticky='w')
-        self.ip_label = MyLabel(canv, text='')
+        self.ip_label = MyLabel(window_frame, text='')
         self.ip_label.grid(column=1, sticky='w')
-        self.serv_entry = tk.Entry(canv)
+        self.serv_entry = tk.Entry(window_frame)
         self.serv_entry.configure(bg='#535353', fg=fgcolor, width=15)
         self.serv_entry.grid(row=0, column=1,  sticky='we')
-        self.sumbit_manager = tk.Button(canv, text='test', command=lambda:self.get_option('manager'))
-        self.sumbit_manager.configure(highlightbackground=bgcolor)
-        self.sumbit_manager.grid(row=0, column=2, sticky='we', padx=(5,0))
-        manager = config_reader('settings')['manager']
-        self.serv_entry.insert(tk.END, manager)
-        canv.config(bg=bgcolor)
-        canv.pack()
+        self.manager = config_reader('settings')['manager']
+        test_button = tk.Button(window_frame, text='test', command=self.validate)
+        test_button.configure(highlightbackground=bgcolor)
+        test_button.grid(row=0, column=2, sticky='we', padx=(5,0))
+        local_button = tk.Button(window_frame, text='reset', command=self.set_local)
+        local_button.grid(row=0, column=3, sticky='we')
+        self.serv_entry.insert(tk.END, self.manager)
+        window_frame.config(bg=bgcolor)
+        window_frame.pack()
         self.buttonbox(bgcolor)
-        
+
+    def set_local(self):
+        self.serv_entry.delete(0, tk.END)
+        self.serv_entry.insert(tk.END, 'localhost')
+
+    def validate(self):
+        self.new_manager = self.serv_entry.get()
+        ipaddress = test_network(self.new_manager)
+        if ipaddress:
+            self.ip_label.config(text=ipaddress)
+            return 1
+        else:
+            self.ip_label.config(text='---')
+            return 0
+
+    def apply(self):
+        config_writer('settings', 'manager', self.new_manager)
+
 
 class ShowAllWindow(tkPopup.Popup):
 
     def body(self, master, file):
-        self.geometry('+680+380')
+        self.geometry('+680+100')
         self.resizable(0,0)
         sframe= tk.Frame(self, bg=bgcolor, highlightthickness=0)
         sframe.pack()
