@@ -18,7 +18,6 @@ class Popup(tk.Toplevel):
             self.title(title)
         self.transient()
         self.result = None
-        #self.buttonbox(color)
         self.grab_set()
         self.protocol("WM_DELETE_WINDOW", self.cancel)
         self.wait_window(self)
@@ -26,20 +25,20 @@ class Popup(tk.Toplevel):
     # construction hooks
 
     def body(self, master):
-        
         # create dialog body.  return widget that should have
         # initial focus.  this method should be overridden
         pass
 
     def buttonbox(self, color, pad=0):
-
         # add standard button box. 
         # override if you don't want the standard buttons
         bbox = tk.Frame(self)
-        but2 = tk.Button(bbox, text="Cancel", width=7, command=self.cancel)
-        but2.pack(side=tk.RIGHT, padx=(5,pad), pady=5)
-        but1 = tk.Button(bbox, text="OK", width=7, command=self.ok, default=tk.ACTIVE)
-        but1.pack(side=tk.RIGHT, padx=5, pady=5)
+        but1 = tk.Button(bbox, text="Cancel", width=7, command=self.cancel)
+        but1.configure(highlightbackground=color)
+        but1.pack(side=tk.RIGHT, padx=(5, pad), pady=5)
+        but2 = tk.Button(bbox, text="OK", width=7, command=self.ok)
+        but2.configure(highlightbackground=color)
+        but2.pack(side=tk.RIGHT, padx=5, pady=5)
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
         bbox.configure(bg=color, highlightbackground="#443322")
@@ -59,7 +58,6 @@ class Popup(tk.Toplevel):
         self.cancel()
 
     def cancel(self, event=None):
-
         # put focus back to the window
         self.focus_set()
         self.destroy()
