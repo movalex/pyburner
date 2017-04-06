@@ -310,12 +310,12 @@ class MainApplication(tk.Tk):
         truncate_file(bat_file)
         with open(bat_file, 'a') as bat:
             print(max_version, quoted_max_file, file=bat, end=' ')
-            print('-frames:', file=bat, end=' ')
-            print(", ".join(self.server_frames_list), file=bat, end=' ')
+            print('-frames:', file=bat, end='')
+            print(",".join(self.server_frames_list), file=bat, end=' ')
             print('-submit:', self.ip_address,
                   file=bat, end=' ')
             print('-jobname: {}_{}'.format(self.job_name, self.selected_server), file=bat, end=' ')
-            print('-priority: {}'.format(self.PRIORITY), file=bat)
+            print('-priority:{}'.format(self.PRIORITY), file=bat)
         if self.var.get() == 1:
             self.text.set_text('\nOpening folder...\n')
             self.open_result(max_folder)
