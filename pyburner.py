@@ -29,7 +29,7 @@ except NameError:
     FileNotFoundError = IOError
 
 os_name = platform.system()
-bgcolor = '#333333'
+bgcolor = '#222222'
 fgcolor = '#f0f0f0'
 
 
@@ -88,7 +88,7 @@ class MyTextSettings(tk.Text):
             my_font = Font(family="Lucida Console", size=11)
         elif os_name == 'Windows':
             my_font = Font(family="Consolas", size=9)
-        self.configure(font=my_font, bg=bgcolor, wrap=tk.WORD,
+        self.configure(font=my_font, bg='#333333', wrap=tk.WORD,
                        fg=fgcolor, highlightthickness=0)
 
     def clear_all(self):
@@ -106,7 +106,28 @@ class MyLabel(tk.Label):
 
 
 class MainApplication(tk.Tk):
-    """main GUI"""
+    """main application window
+    
+    Attributes:
+        all_servers (list): returns list of all servers
+        customFont (TYPE): defined two types of fonts for mac/win compatibility
+        entry (entry field): enter failed server number
+        file_contents (list): the contents of the backburner job file
+        ip_address (txt): chek if the render manager is available and fill it's ip address
+        job_name (txt): Backburner's job name
+        L1 (UI label): label
+        PRIORITY (txt): set priority for new backburner job
+        RENDER_MANAGER (txt): render manager name
+        run_button (button): run program to create .bat-render file 
+        SCENE_LOOKUP (txt): file 
+        selected_server (txt): failed server name you have chosen 
+        server_frames_list (list): list of frames assinged to failed server to be re-rendered
+        servers (list): list of servers in backburner job
+        text (txt): text field
+        the_csv_file (file): backburner job exported file 
+        var (bool): checkmark for 'open result' function (1) - checked (0) - unchecked 
+        VERSION (txt): 3DsMax version
+    """
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -131,8 +152,8 @@ class MainApplication(tk.Tk):
                                    height=txt_area[0],
                                    width=txt_area[1],
                                    yscrollcommand=scrollbar.set)
-        self.text.tag_configure('txt_indent', lmargin1=5)
-        self.text.pack(side=tk.LEFT, expand=True)
+        self.text.tag_configure('txt_indent', lmargin1=7)
+        self.text.pack(padx=(4,0), side=tk.LEFT, expand=True)
         scrollbar.configure(command=self.text.yview)      
         scrollbar.pack(side=tk.LEFT, fill=tk.Y, expand=False)
         
@@ -211,10 +232,19 @@ class MainApplication(tk.Tk):
         self.read_config()
 
     def read_config(self):
-        self.SCENE_LOOKUP = config_reader('settings')['path']
-        self.PRIORITY = config_reader('settings')['priority']
-        self.RENDER_MANAGER = config_reader('settings')['manager']
-        self.VERSION = config_reader('settings')['version']
+        try:
+            self.SCENE_LOOKUP = config_reader('settings')['path']
+            self.PRIORITY = config_reader('settings')['priority']
+            self.RENDER_MANAGER = config_reader('settings')['manager']
+            self.VERSION = config_reader('settings')['version']
+        except (configparser.NoSectionError, KeyError):
+            sample_config='''[settings]
+priority = 100
+path = \\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes
+version = 2016
+manager = localhost'''
+            with open('config.ini', 'w') as cfgfile:
+                cfgfile.write(sample_config)
 
     def show_all(self):
         if self.the_csv_file:
@@ -237,6 +267,7 @@ class MainApplication(tk.Tk):
         if self.the_csv_file:
             self.job_name = get_job_name(self.the_csv_file)
             self.all_servers = servers_sorted(self.the_csv_file)
+            self.text.set_text('Job name: {}\n'.format(self.job_name))
             self.text.set_text("Found {} servers in file:".format(
                               len(self.all_servers)))
             for num, serv in enumerate(self.all_servers):
@@ -254,8 +285,8 @@ class MainApplication(tk.Tk):
                 self.server_frames_list = list(return_frames(self.the_csv_file, self.all_servers[int(server_num)-1]))
                 self.selected_server = self.all_servers[int(server_num)-1]
                 self.text.set_text('you\'ve selected server #{}'.format(server_num))
-                self.text.set_text('\'{}\''.format(self.selected_server))
-                self.text.set_text(r'Now press "run" button (CTRL+r) to choose .max file')
+                self.text.set_text("'{}'".format(self.selected_server))
+                self.text.set_text(r'Now press "run" button (or SPACEBUTTON) to choose .max file')
                 self.run_button.focus()
             else:
                 self.text.set_text('enter number greater than zero')
@@ -272,7 +303,25 @@ class MainApplication(tk.Tk):
             return open_maxfile
         else:
             self.text.set_text('\nClick "run" and choose .max file!')
-            return
+            return 0
+
+    def run_app(self, event=None):
+        self.read_config()
+        max_file = self.choose_max_file()
+        if self.job_name and max_file:
+            self.text.set_text('\nThese frames will be re-rendered:')
+            self.text.set_text(", ".join(self.server_frames_list))
+            self.text.set_text('\r')
+            self.ip_address = test_network(self.RENDER_MANAGER)
+            if self.ip_address:
+                norm_path = os.path.normpath(max_file)
+                self.make_bat(norm_path)
+            else:
+                self.text.set_text('\nCheck server settings in preferences')
+        elif not self.job_name:
+            self.text.set_text("You should select jobs file first")
+        elif not self.selected_server:
+            self.text.set_text("Enter server number and submit!")
 
     @staticmethod
     def open_result(folder):
@@ -283,23 +332,6 @@ class MainApplication(tk.Tk):
             subprocess.Popen('explorer /open, {}'.format(folder))
         else:
             pass
-
-    def run_app(self, event=None):
-        self.read_config()
-        if self.job_name and self.selected_server:
-            self.text.set_text('\nThese frames will be re-rendered:')
-            self.text.set_text(", ".join(self.server_frames_list))
-            self.text.set_text('\r')
-            self.ip_address = test_network(self.RENDER_MANAGER)
-            if self.ip_address:
-                norm_path = os.path.normpath(self.choose_max_file())
-                self.make_bat(norm_path)
-            else:
-                self.text.set_text('\nCheck server settings in preferences')
-        elif not self.job_name:
-            self.text.set_text("You should select jobs file first")
-        elif not self.selected_server:
-            self.text.set_text("Enter server number and submit!")
 
     def make_bat(self, max_path):
         max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(self.VERSION)
@@ -332,7 +364,7 @@ class MainApplication(tk.Tk):
         sys.exit(0)
         
 
-class OpenPrefs(tkPopup.Popup):
+class OpenPrefs(tkPopup.PopupWindow):
 
     def body(self, master):
         self.geometry('+680+100')
@@ -368,14 +400,14 @@ class OpenPrefs(tkPopup.Popup):
             self.ip_label.config(text=ipaddress)
             return 1
         else:
-            self.ip_label.config(text='---')
+            self.ip_label.config(text='connection error')
             return 0
 
     def apply(self):
         config_writer('settings', 'manager', self.new_manager)
 
 
-class ShowAllWindow(tkPopup.Popup):
+class ShowAllWindow(tkPopup.PopupWindow):
 
     def body(self, master, file):
         self.geometry('+680+100')
