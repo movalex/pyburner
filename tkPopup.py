@@ -4,7 +4,7 @@ except ImportError:
     import Tkinter as tk     # python 2
 
 
-class Popup(tk.Toplevel):
+class PopupWindow(tk.Toplevel):
 
     def __init__(self, title=None, *args, **kwargs):
 
