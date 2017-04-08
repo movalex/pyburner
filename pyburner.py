@@ -55,9 +55,8 @@ def config_reader(section):
             config_dict[option] = cfg.get(section, option)
             if config_dict[option] == -1:
                 print("skip: %s" % option)
-        except Exception as e:
+        except Exception:
             print("exception on %s!" % option)
-            raise e
             config_dict[option] = None
     return config_dict
 
@@ -265,7 +264,11 @@ manager = localhost'''
                                    ('All Files', '*.*')),
                         title='Choose a file')
         if self.the_csv_file:
-            self.job_name = get_job_name(self.the_csv_file)
+            try:
+                self.job_name = get_job_name(self.the_csv_file)
+            except csv.Error:
+                self.text.set_text('The file is not valid, try another one please')
+                return
             self.all_servers = servers_sorted(self.the_csv_file)
             self.text.set_text('Job name: {}\n'.format(self.job_name))
             self.text.set_text("Found {} servers in file:".format(
@@ -361,7 +364,6 @@ manager = localhost'''
 
     @staticmethod
     def quit_app(event=None):
-        print('bye')
         sys.exit(0)
         
 
