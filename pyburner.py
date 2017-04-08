@@ -46,7 +46,7 @@ def add_quotes(txt):
 
 
 def config_reader(section):
-    cfg = configparser.ConfigParser()
+    cfg = configparser.RawConfigParser()
     cfg.read('config.ini')
     config_dict = {}
     options = cfg.options(section)
@@ -55,8 +55,9 @@ def config_reader(section):
             config_dict[option] = cfg.get(section, option)
             if config_dict[option] == -1:
                 print("skip: %s" % option)
-        except:
+        except Exception as e:
             print("exception on %s!" % option)
+            raise e
             config_dict[option] = None
     return config_dict
 
@@ -152,7 +153,6 @@ class MainApplication(tk.Tk):
                                    height=txt_area[0],
                                    width=txt_area[1],
                                    yscrollcommand=scrollbar.set)
-        self.text.tag_configure('txt_indent', lmargin1=7)
         self.text.pack(padx=(4,0), side=tk.LEFT, expand=True)
         scrollbar.configure(command=self.text.yview)      
         scrollbar.pack(side=tk.LEFT, fill=tk.Y, expand=False)
@@ -238,9 +238,9 @@ class MainApplication(tk.Tk):
             self.RENDER_MANAGER = config_reader('settings')['manager']
             self.VERSION = config_reader('settings')['version']
         except (configparser.NoSectionError, KeyError):
-            sample_config='''[settings]
+            sample_config=r'''[settings]
 priority = 100
-path = \\MEIJIN-3DMAX\Projects\TestCMD_Render\scenes
+path = ~\Documents
 version = 2016
 manager = localhost'''
             with open('config.ini', 'w') as cfgfile:
@@ -272,6 +272,7 @@ manager = localhost'''
                               len(self.all_servers)))
             for num, serv in enumerate(self.all_servers):
                 self.text.set_text('{}) {}'.format(num+1, serv))
+            self.text.set_text('\nenter failed server number\nand submit (hit ENTER)')
             self.L1.configure(text='Enter server number (1-{})'.format(len(self.all_servers)))
             self.entry.delete("0", tk.END)
             self.entry.focus()
@@ -284,9 +285,9 @@ manager = localhost'''
             if server_num > 0:
                 self.server_frames_list = list(return_frames(self.the_csv_file, self.all_servers[int(server_num)-1]))
                 self.selected_server = self.all_servers[int(server_num)-1]
-                self.text.set_text('you\'ve selected server #{}'.format(server_num))
+                self.text.set_text('\nyou\'ve selected server #{}'.format(server_num))
                 self.text.set_text("'{}'".format(self.selected_server))
-                self.text.set_text(r'Now press "run" button (or SPACEBUTTON) to choose .max file')
+                self.text.set_text(r'Now press RUN button and choose .max file')
                 self.run_button.focus()
             else:
                 self.text.set_text('enter number greater than zero')
@@ -349,7 +350,7 @@ manager = localhost'''
             print('-jobname: {}_{}'.format(self.job_name, self.selected_server), file=bat, end=' ')
             print('-priority:{}'.format(self.PRIORITY), file=bat)
         if self.var.get() == 1:
-            self.text.set_text('\nOpening folder...\n')
+            self.text.set_text('Opening folder...\n')
             self.open_result(max_folder)
             self.var.set(0)  # uncheck button to prevent multiple windows when re-run
         else:
