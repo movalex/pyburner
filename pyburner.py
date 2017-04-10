@@ -40,7 +40,7 @@ def truncate_file(file):
     except FileNotFoundError: 
         pass
 
-
+           
 def add_quotes(txt):
     return '"{}"'.format(txt)
 
