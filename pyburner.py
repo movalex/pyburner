@@ -266,8 +266,11 @@ manager = localhost'''
         if self.the_csv_file:
             try:
                 self.job_name = get_job_name(self.the_csv_file)
+                if self.job_name == None:
+                    self.text.set_text('Job name is empty, check file')
+                    return
             except csv.Error:
-                self.text.set_text('The file is not valid, try another one please')
+                self.text.set_text('The file is not valid')
                 return
             self.all_servers = servers_sorted(self.the_csv_file)
             self.text.set_text('Job name: {}\n'.format(self.job_name))
