@@ -201,14 +201,14 @@ class MainApplication(tk.Tk):
         self.config(menu=menubar)
         filemenu.add_command(label='Open',
                              command=self.csv_open,
-                             accelerator="Ctrl+L")
+                             accelerator="Ctrl+O")
         filemenu.add_command(label='Preferences',
                              command=self.open_preferences)
         filemenu.add_separator()
         filemenu.add_command(label='Exit',
                              command=self.quit_app,
                              accelerator='Ctrl+Q')
-        self.bind("<Control-l>", self.csv_open)
+        self.bind("<Control-o>", self.csv_open)
         self.bind("<Control-q>", self.quit_app)
         menubar.add_cascade(label='File', menu=filemenu)
         self.text.clear_help()
@@ -220,7 +220,7 @@ class MainApplication(tk.Tk):
 
     def load_defaults(self):
         self.var.set(1)
-        self.L1.config(text='press CRTL+L to load file ')
+        self.L1.config(text='press CTRL+O to load file ')
         self.entry.delete("0", tk.END)
         self.job_name = None
         self.selected_server = None
