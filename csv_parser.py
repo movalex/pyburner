@@ -45,6 +45,7 @@ def return_frames(file_, server):
 
 
 def print_all_jobs(file_):
+    print('Job name: {}\n'.format(get_job_name(test_file)))
     for server in servers_sorted(file_):
         print(server)
         for n in return_frames(file_, server):
@@ -53,5 +54,4 @@ def print_all_jobs(file_):
 
 
 if __name__ == '__main__':
-    print('Job name: {}\n'.format(get_job_name(test_file)))
     print_all_jobs(test_file)
