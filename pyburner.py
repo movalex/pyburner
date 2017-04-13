@@ -35,8 +35,8 @@ fgcolor = '#f0f0f0'
 
 def truncate_file(file):
     try:
-        f = open(file, 'r+')
-        f.truncate()
+        with open(file, 'r+') as f:
+            f.truncate()
     except FileNotFoundError: 
         pass
 
@@ -112,20 +112,20 @@ class MainApplication(tk.Tk):
         all_servers (list): returns list of all servers
         customFont (TYPE): defined two types of fonts for mac/win compatibility
         entry (entry field): enter failed server number
-        file_contents (list): the contents of the backburner job file
-        ip_address (txt): chek if the render manager is available and fill it's ip address
-        job_name (txt): Backburner's job name
+        file_contents (list): the contents of the Backburner job file
+        ip_address (txt): check if the render manager is available and fill it's ip address
+        job_name (txt): Backburner job name
         L1 (UI label): label
-        PRIORITY (txt): set priority for new backburner job
+        PRIORITY (txt): set priority for new Backburner job
         RENDER_MANAGER (txt): render manager name
         run_button (button): run program to create .bat-render file 
         SCENE_LOOKUP (txt): file 
         selected_server (txt): failed server name you have chosen 
-        server_frames_list (list): list of frames assinged to failed server to be re-rendered
-        servers (list): list of servers in backburner job
+        server_frames_list (list): list of frames assigned to failed server to be re-rendered
+        servers (list): list of servers in Backburner job
         text (txt): text field
-        the_csv_file (file): backburner job exported file 
-        var (bool): checkmark for 'open result' function (1) - checked (0) - unchecked 
+        the_csv_file (file): Backburner job exported file 
+        var (int): check for 'open result' function 
         VERSION (txt): 3DsMax version
     """
 
@@ -241,7 +241,8 @@ class MainApplication(tk.Tk):
 priority = 100
 path = ~\Documents
 version = 2016
-manager = localhost'''
+manager = localhost
+'''
             with open('config.ini', 'w') as cfgfile:
                 cfgfile.write(sample_config)
 
