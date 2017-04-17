@@ -145,7 +145,7 @@ class MainApplication(tk.Tk):
         # text area
         frame1 = tk.Frame(self)
         frame1.configure(background=bgcolor)
-        frame1.grid(row=0, column=0, sticky='w')
+        frame1.grid(row=0, column=0, columnspan=2, sticky='w')
 
         scrollbar = tk.Scrollbar(frame1)
         self.text = MyTextSettings(frame1,
@@ -157,42 +157,45 @@ class MainApplication(tk.Tk):
         scrollbar.pack(side=tk.LEFT, fill=tk.Y, expand=False)
         
         # labels area
-        frame2 = tk.Frame(self)
-        frame2.configure(background=bgcolor, highlightthickness=0)
-        frame2.grid(sticky='we', padx=(5,0), pady=10)
-        self.L1 = MyLabel(frame2, font=self.customFont)
+        l_frame = tk.Frame(self)
+        l_frame.configure(background=bgcolor, highlightthickness=0)
+        l_frame.grid(row=1, column=0, sticky='w', padx=(5,0), pady=10)
+        self.L1 = MyLabel(l_frame, font=self.customFont)
         self.L1.grid(row=1, column=0, sticky='w', padx=(0, 20))
-        self.entry = tk.Entry(frame2, width=4, font=self.customFont)
-        self.entry.grid(row=1, column=2, sticky='w', padx=(0,6))
-
-        # buttons area
-        submit_button = tk.Button(frame2, text='submit', command=self.get_server_entry, font=self.customFont)
-        submit_button.grid(row=1, column=3, padx=(0,3), sticky='w')
-        submit_button.configure(highlightbackground=bgcolor)
-        self.bind('<Return>', self.get_server_entry)
-        self.run_button = tk.Button(frame2, text='run', command=self.run_app, font=self.customFont)
-        self.run_button.configure(highlightbackground=bgcolor)
-        self.run_button.grid(row=1, column=4, padx=(0,3))
-        self.bind('<Control-r>', self.run_app)
-        reset_button = tk.Button(frame2, text='reset', command=self.cleanup, font=self.customFont)
-        reset_button.configure(highlightbackground=bgcolor)
-        reset_button.grid(row=1, column=5, sticky='we')
         self.var = tk.IntVar()
-        checkbutton1 = tk.Checkbutton(frame2,
+        checkbutton1 = tk.Checkbutton(l_frame,
                                       background="#535353",
                                       text='open result',
                                       variable=self.var,
                                       font=self.customFont)
         checkbutton1.configure(height=1,  fg="#a7a7a7")
         checkbutton1.grid(row=2, column=0, sticky='w')
-        showall_button = tk.Button(frame2, text='all jobs', 
+
+        # buttons area
+        b_frame = tk.Frame(self)
+        b_frame.config(bg=bgcolor)
+        b_frame.grid(row=1, column=1,padx=(0, 20), sticky='e')
+        submit_button = tk.Button(b_frame, text='submit', command=self.get_server_entry, font=self.customFont)
+        submit_button.grid(row=1, column=3, padx=(0,3), sticky='w')
+        submit_button.configure(highlightbackground=bgcolor)
+        self.bind('<Return>', self.get_server_entry)
+        self.run_button = tk.Button(b_frame, text='run', command=self.run_app, font=self.customFont)
+        self.run_button.configure(highlightbackground=bgcolor)
+        self.run_button.grid(row=1, column=4, padx=(0,3))
+        self.bind('<Control-r>', self.run_app)
+        reset_button = tk.Button(b_frame, text='reset', command=self.cleanup, font=self.customFont)
+        reset_button.configure(highlightbackground=bgcolor)
+        reset_button.grid(row=1, column=5, sticky='we')
+        showall_button = tk.Button(b_frame, text='all jobs', 
                                    command=self.show_all)
         showall_button.configure(highlightbackground=bgcolor)
         showall_button.grid(row=2, column=3, sticky='w')
         showall_button.config(font=self.customFont)
-        close_button = tk.Button(frame2, text='close', command=self.quit_app, font=self.customFont)
+        close_button = tk.Button(b_frame, text='close', command=self.quit_app, font=self.customFont)
         close_button.configure(highlightbackground=bgcolor)
         close_button.grid(row=2, column=4, columnspan=2, sticky='we')
+        self.entry = tk.Entry(b_frame, width=6, font=self.customFont)
+        self.entry.grid(row=1, column=2, sticky='w', padx=(0,6))
         self.entry.configure(background="#535353", foreground=fgcolor, highlightthickness=0)
 
         # file menu
@@ -220,7 +223,7 @@ class MainApplication(tk.Tk):
 
     def load_defaults(self):
         self.var.set(1)
-        self.L1.config(text='press CTRL+O to load file ')
+        self.L1.config(text='press CTRL+O to open file  ')
         self.entry.delete("0", tk.END)
         self.job_name = None
         self.selected_server = None
@@ -315,8 +318,8 @@ manager = localhost
 
     def run_app(self, event=None):
         self.read_config()
-        max_file = self.choose_max_file()
-        if self.job_name and max_file:
+        if self.job_name and self.selected_server:
+            max_file = self.choose_max_file()
             self.text.set_text('\nThese frames will be re-rendered:')
             self.text.set_text(", ".join(self.server_frames_list))
             self.text.set_text('\r')
