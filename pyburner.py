@@ -317,8 +317,8 @@ manager = localhost
             return 0
 
     def run_app(self, event=None):
-        self.read_config()
         if self.job_name and self.selected_server:
+            self.read_config()
             max_file = self.choose_max_file()
             self.text.set_text('\nThese frames will be re-rendered:')
             self.text.set_text(", ".join(self.server_frames_list))
