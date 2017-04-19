@@ -1,9 +1,9 @@
 # pyBurner
-This small python script helps re-render frames of the failed render server with Autodesk Backburner.
+This script automates frames re-rendering if Autodesk Backburner render server has failed.
 ## Description
 Sometimes when you render a 3dMax animation on multiple servers, if one server fails, you have to re-render only failed frames which was assigned to that server.
 In this case you have to manually choose those frames and add them to render queue.
-This little script automates this task, so you have to just export job file from Backburner and then choose failed server. The result of the program run is a .bat file, which, when executed, adds new job to the Backburner queue with all failed frames.
+This script automates this task, so you have to just export job file from Backburner and then choose failed server. The result of the program run is a .bat file, which, when executed, adds new job to the Backburner queue with all failed frames.
 
 `settings.ini` file has options for:
 * 3dMax Version (year)
