@@ -137,7 +137,7 @@ class MainApplication(tk.Tk):
 
         if os_name == 'Darwin':
             self.customFont = Font(family="Lucida Console", size=10)
-            txt_area = [18, 50]
+            txt_area = [18, 53]
         elif os_name == 'Windows':
             txt_area = [18, 48]
             self.customFont = nametofont("TkDefaultFont")
@@ -223,7 +223,7 @@ class MainApplication(tk.Tk):
 
     def load_defaults(self):
         self.var.set(1)
-        self.L1.config(text='press CTRL+O to open file  ')
+        self.L1.config(text='press CTRL+O to open file')
         self.entry.delete("0", tk.END)
         self.job_name = None
         self.selected_server = None
