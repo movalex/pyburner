@@ -11,3 +11,7 @@ test_*
 
 build/
 dist/
+.egg/
+
+# configuration file
+config.ini
