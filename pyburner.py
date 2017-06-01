@@ -111,7 +111,7 @@ class MainApplication(tk.Tk):
     Attributes:
         all_servers (list): returns list of all servers
         customFont (TYPE): defined two types of fonts for mac/win compatibility
-        entry (entry field): enter failed server number
+        entry (entry field): enter number of the server that failed to render
         file_contents (list): the contents of the Backburner job file
         ip_address (txt): check if the render manager is available and fill it's ip address
         job_name (txt): Backburner job name
@@ -119,13 +119,13 @@ class MainApplication(tk.Tk):
         PRIORITY (txt): set priority for new Backburner job
         RENDER_MANAGER (txt): render manager name
         run_button (button): run program to create .bat-render file 
-        SCENE_LOOKUP (txt): file 
+        SCENE_LOOKUP (txt): path to the folder with .max files 
         selected_server (txt): failed server name you have chosen 
         server_frames_list (list): list of frames assigned to failed server to be re-rendered
         servers (list): list of servers in Backburner job
         text (txt): text field
         the_csv_file (file): Backburner job exported file 
-        var (int): check for 'open result' function 
+        var (int): 1 - to call 'open result' function; 0 - to pass
         VERSION (txt): 3DsMax version
     """
 
@@ -244,8 +244,7 @@ class MainApplication(tk.Tk):
 priority = 100
 path = ~\Documents
 version = 2016
-manager = localhost
-'''
+manager = localhost'''
             with open('config.ini', 'w') as cfgfile:
                 cfgfile.write(sample_config)
 
@@ -282,7 +281,7 @@ manager = localhost
                               len(self.all_servers)))
             for num, serv in enumerate(self.all_servers):
                 self.text.set_text('{}) {}'.format(num+1, serv))
-            self.text.set_text('\nenter failed server number\nand submit (hit ENTER)')
+            self.text.set_text('\nenter server number and submit (hit ENTER)')
             self.L1.configure(text='Enter server number (1-{})'.format(len(self.all_servers)))
             self.entry.delete("0", tk.END)
             self.entry.focus()
@@ -319,16 +318,18 @@ manager = localhost
     def run_app(self, event=None):
         if self.job_name and self.selected_server:
             self.read_config()
-            max_file = self.choose_max_file()
-            self.text.set_text('\nThese frames will be re-rendered:')
+            self.text.set_text('\nThese frames will be rendered again:')
             self.text.set_text(", ".join(self.server_frames_list))
             self.text.set_text('\r')
-            self.ip_address = test_network(self.RENDER_MANAGER)
-            if self.ip_address:
-                norm_path = os.path.normpath(max_file)
-                self.make_bat(norm_path)
-            else:
-                self.text.set_text('\nCheck server settings in preferences')
+            max_file = self.choose_max_file()
+            if max_file:
+                self.ip_address = test_network(self.RENDER_MANAGER) #test network path again just in case
+                if self.ip_address:
+                    norm_path = os.path.normpath(max_file)
+                    self.make_bat(norm_path)
+                else:
+                    self.text.set_text('\nCheck server settings\
+                        in preferences and run again')
         elif not self.job_name:
             self.text.set_text("You should select jobs file first")
         elif not self.selected_server:
