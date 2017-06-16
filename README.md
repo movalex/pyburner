@@ -5,13 +5,15 @@ Sometimes when you render a 3dMax animation on multiple servers, if one server f
 In this case you have to manually choose those frames and add them to render queue.
 This script automates this task, so you have to just export job file from Backburner and then choose failed server. The result of the program run is a .bat file, which, when executed, adds new job to the Backburner queue with all failed frames.
 
-`settings.ini` file has options for:
+`config.ini` file has options for:
 * 3dMax Version (year)
 * Render Priority
 * Computer name with working render manager
 * Path to project folder with the 3dMax scene
 
-The contents of the output file is following:
+If `config.ini` file is not found, new config file is generated with default values.
+
+The result file structure is following:
 `"C:\Program Files\Autodesk\3ds Max {year}\3dsmaxcmd.exe" "{path-to-max-file}.max" -frames:{comma separated frame numbers} -submit: {Backburner manager ip address} -jobname: {job_name}_{server_name} -priority:{1-100}`
 
 ##Installation and run
