@@ -33,7 +33,7 @@ The contents of the output file is following:
 
 NB: you can use either python2 or python3 to build this app. I prefer Python3
 
-![](/../screenshots/images/screenshot1.jpg "Main GUI")
+![](/../screenshots/images/screenshot.jpg "Main GUI")
 
 ## Usage
 1. Go to Backburner Queue Monitor and export report file to the Desktop by right clicking the job name
