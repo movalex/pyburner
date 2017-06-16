@@ -16,7 +16,7 @@ If `config.ini` file is not found, new config file is generated with default val
 The result file structure is following:
 `"C:\Program Files\Autodesk\3ds Max {year}\3dsmaxcmd.exe" "{path-to-max-file}.max" -frames:{comma separated frame numbers} -submit: {Backburner manager ip address} -jobname: {job_name}_{server_name} -priority:{1-100}`
 
-##Installation and run
+## Installation and run
 
 ### Windows command line usage:
 
