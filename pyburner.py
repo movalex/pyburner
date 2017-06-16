@@ -164,11 +164,15 @@ class MainApplication(tk.Tk):
         self.L1.grid(row=1, column=0, sticky='w', padx=(0, 20))
         self.var = tk.IntVar()
         checkbutton1 = tk.Checkbutton(l_frame,
-                                      background="#535353",
+                                      background=bgcolor,
+                                      activebackground=bgcolor,
+                                      activeforeground=fgcolor,
+                                      selectcolor='#555555',
+                                      foreground=fgcolor,
                                       text='open result',
                                       variable=self.var,
-                                      font=self.customFont)
-        checkbutton1.configure(height=1,  fg="#a7a7a7")
+                                      font=self.customFont
+                                      )
         checkbutton1.grid(row=2, column=0, sticky='w')
 
         # buttons area
@@ -318,11 +322,11 @@ manager = localhost'''
     def run_app(self, event=None):
         if self.job_name and self.selected_server:
             self.read_config()
-            self.text.set_text('\nThese frames will be rendered again:')
-            self.text.set_text(", ".join(self.server_frames_list))
-            self.text.set_text('\r')
             max_file = self.choose_max_file()
             if max_file:
+                self.text.set_text('\nThese frames will be rendered again:')
+                self.text.set_text(", ".join(self.server_frames_list))
+                self.text.set_text('\r')
                 self.ip_address = test_network(self.RENDER_MANAGER) #test network path again just in case
                 if self.ip_address:
                     norm_path = os.path.normpath(max_file)
