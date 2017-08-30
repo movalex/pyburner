@@ -123,7 +123,7 @@ class MainApplication(tk.Tk):
         selected_server (txt): failed server name you have chosen 
         server_frames_list (list): list of frames assigned to failed server to be re-rendered
         servers (list): list of servers in Backburner job
-        text (txt): text field
+        text (txt): console text field
         the_csv_file (file): Backburner job exported file 
         var (int): 1 - to call 'open result' function; 0 - to pass
         VERSION (txt): 3DsMax version
@@ -158,22 +158,20 @@ class MainApplication(tk.Tk):
         
         # labels area
         l_frame = tk.Frame(self)
-        l_frame.configure(background=bgcolor, highlightthickness=0)
-        l_frame.grid(row=1, column=0, sticky='w', padx=(5,0), pady=10)
+        l_frame.config(background=bgcolor)
+        l_frame.grid(row=1, column=0, pady=5)
         self.L1 = MyLabel(l_frame, font=self.customFont)
-        self.L1.grid(row=1, column=0, sticky='w', padx=(0, 20))
+        self.L1.pack()
         self.var = tk.IntVar()
         checkbutton1 = tk.Checkbutton(l_frame,
+                                      font=self.customFont,
                                       background=bgcolor,
                                       activebackground=bgcolor,
-                                      activeforeground=fgcolor,
-                                      selectcolor='#555555',
-                                      foreground=fgcolor,
-                                      text='open result',
                                       variable=self.var,
-                                      font=self.customFont
                                       )
-        checkbutton1.grid(row=2, column=0, sticky='w')
+        checkbutton1.pack(side=tk.LEFT)
+        L2 = MyLabel(l_frame, bg="red", text="open result", font=self.customFont)
+        L2.pack(side=tk.LEFT)
 
         # buttons area
         b_frame = tk.Frame(self)
@@ -188,13 +186,12 @@ class MainApplication(tk.Tk):
         self.run_button.grid(row=1, column=4, padx=(0,3))
         self.bind('<Control-r>', self.run_app)
         reset_button = tk.Button(b_frame, text='reset', command=self.cleanup, font=self.customFont)
-        reset_button.configure(highlightbackground=bgcolor)
+        reset_button.config(highlightbackground=bgcolor)
         reset_button.grid(row=1, column=5, sticky='we')
         showall_button = tk.Button(b_frame, text='all jobs', 
                                    command=self.show_all)
-        showall_button.configure(highlightbackground=bgcolor)
+        showall_button.configure(highlightbackground=bgcolor, font=self.customFont)
         showall_button.grid(row=2, column=3, sticky='w')
-        showall_button.config(font=self.customFont)
         close_button = tk.Button(b_frame, text='close', command=self.quit_app, font=self.customFont)
         close_button.configure(highlightbackground=bgcolor)
         close_button.grid(row=2, column=4, columnspan=2, sticky='we')
@@ -277,7 +274,7 @@ manager = localhost'''
                     self.text.set_text('Job name is empty, check file')
                     return
             except csv.Error:
-                self.text.set_text('The file is not valid')
+                self.text.set_text('This file is not valid, try another!')
                 return
             self.all_servers = servers_sorted(self.the_csv_file)
             self.text.set_text('Job name: {}\n'.format(self.job_name))
@@ -286,13 +283,13 @@ manager = localhost'''
             for num, serv in enumerate(self.all_servers):
                 self.text.set_text('{}) {}'.format(num+1, serv))
             self.text.set_text('\nenter server number and submit (hit ENTER)')
-            self.L1.configure(text='Enter server number (1-{})'.format(len(self.all_servers)))
+            self.L1.config(text='Enter server number (1-{})'.format(len(self.all_servers)))
             self.entry.delete("0", tk.END)
             self.entry.focus()
         else:
             self.text.clear_help()
 
-    def get_server_entry(self, *args):
+    def get_server_entry(self, event=None):
         try:
             server_num = int(self.entry.get().strip())
             if server_num > 0:
@@ -305,7 +302,7 @@ manager = localhost'''
             else:
                 self.text.set_text('enter number greater than zero')
         except (ValueError, IndexError):
-            self.text.set_text('enter correct number, please')
+            self.text.set_text('Enter correct number!')
 
     def choose_max_file(self):
         open_maxfile = filedialog.askopenfilename(
@@ -370,7 +367,7 @@ manager = localhost'''
             self.var.set(0)  # uncheck button to prevent multiple windows when re-run
         else:
             pass
-        self.text.set_text('Done!\nPlease, check "{}" at {}'.format(
+        self.text.set_text('Done!\nCheck "{}" at {}'.format(
                           os.path.split(bat_file)[1], max_folder))
         self.entry.focus()
 
@@ -447,4 +444,3 @@ if __name__ == '__main__':
     app = MainApplication()
     app.resizable(width=tk.FALSE, height=tk.FALSE)
     app.mainloop()
-    
