@@ -25,7 +25,7 @@ The result file structure is following:
 3. `cd pyburner`
 4. `py -3 pyburner.py`
 
-### Windows build gui application:
+### Windows build standalone gui application:
 
 * install Python (see above)
 * install py2exe `pip3 install py2exe`
