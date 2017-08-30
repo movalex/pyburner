@@ -1,14 +1,16 @@
 from setuptools import setup
+# import sys
+
 
 APP = ['pyburner.py']
-DATA_FILES = []
-OPTIONS = {'argv_emulation': False}
+DATA_FILES = ["config.ini"]
+OPTIONS = {'argv_emulation': True}
+# sys.argv.append('py2app -A')
 
 setup(
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
-    DATA_FILES=["config.ini"],
     version = '0.0.1',
     name = 'pyBurner', 
     description = '''
