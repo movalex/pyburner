@@ -34,6 +34,7 @@ Keep in mind that latest Python 3 version that works with `py2exe` is 3.4.3.
 * check the `dist` folder in script location and run `pyburner.exe` file
 
 ![](/../screenshots/images/screenshot.jpg "Main GUI")
+![](/../screenshots/images/screenshot2.jpg "")
 
 ### Standalone and command line usage on Mac
 You can also use the script on Mac. I've added a lot of ugly hacks to make `tkinter` interface look almost the same on both Windows and OSX, completely for no reason. You can even build a standalone Mac application using [py2app](https://py2app.readthedocs.io/en/latest/). I have no idea how it is helpful, since 3Ds Max and Backburner both Windows applications...
