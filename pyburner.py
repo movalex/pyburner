@@ -29,8 +29,8 @@ except NameError:
     FileNotFoundError = IOError
 
 os_name = platform.system()
-bgcolor = '#222222'
-fgcolor = '#f0f0f0'
+BGCOLOR = '#222222'
+FGCOLOR = '#f0f0f0'
 
 
 def truncate_file(file):
@@ -74,7 +74,8 @@ def test_network(r_manager):
         ip_ = socket.gethostbyname(r_manager)
         return ip_
     except socket.gaierror:
-        err_message = 'Check your network connection.\n Is your render server available?'
+        err_message = '''Check your network connection.\n
+        Is your render server available?'''
         messagebox.showerror('Network Error', err_message)
         return 0   
 
@@ -89,7 +90,7 @@ class MyTextSettings(tk.Text):
         elif os_name == 'Windows':
             my_font = Font(family="Consolas", size=9)
         self.configure(font=my_font, bg='#333333', wrap=tk.WORD,
-                       fg=fgcolor, highlightthickness=0)
+                       fg=FGCOLOR, highlightthickness=0)
 
     def clear_all(self):
         self.delete("1.0", tk.END)
@@ -102,7 +103,7 @@ class MyTextSettings(tk.Text):
 class MyLabel(tk.Label):
     def __init__(self, *args, **kwargs):
         tk.Label.__init__(self, *args, **kwargs)
-        self.configure(bg=bgcolor, fg=fgcolor, highlightthickness=0)
+        self.configure(bg=BGCOLOR, fg=FGCOLOR, highlightthickness=0)
 
 
 class MainApplication(tk.Tk):
@@ -133,7 +134,7 @@ class MainApplication(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.geometry('+300+100')
         self.title('pyBurner')
-        self.configure(bg=bgcolor)
+        self.configure(bg=BGCOLOR)
 
         if os_name == 'Darwin':
             self.customFont = Font(family="Lucida Console", size=10)
@@ -144,7 +145,7 @@ class MainApplication(tk.Tk):
             self.customFont.configure(size=9)       
         # text area
         frame1 = tk.Frame(self)
-        frame1.configure(background=bgcolor)
+        frame1.configure(background=BGCOLOR)
         frame1.grid(row=0, column=0, columnspan=2, sticky='w')
 
         scrollbar = tk.Scrollbar(frame1)
@@ -158,15 +159,15 @@ class MainApplication(tk.Tk):
         
         # labels area
         l_frame = tk.Frame(self)
-        l_frame.config(background=bgcolor)
+        l_frame.config(background=BGCOLOR)
         l_frame.grid(row=1, column=0, pady=5)
         self.L1 = MyLabel(l_frame, font=self.customFont)
         self.L1.pack()
         self.var = tk.IntVar()
         checkbutton1 = tk.Checkbutton(l_frame,
                                       font=self.customFont,
-                                      background=bgcolor,
-                                      activebackground=bgcolor,
+                                      background=BGCOLOR,
+                                      activebackground=BGCOLOR,
                                       variable=self.var,
                                       )
         checkbutton1.pack(side=tk.LEFT)
@@ -175,29 +176,29 @@ class MainApplication(tk.Tk):
 
         # buttons area
         b_frame = tk.Frame(self)
-        b_frame.config(bg=bgcolor)
+        b_frame.config(bg=BGCOLOR)
         b_frame.grid(row=1, column=1,padx=(0, 20), sticky='e')
         submit_button = tk.Button(b_frame, text='submit', command=self.get_server_entry, font=self.customFont)
         submit_button.grid(row=1, column=3, padx=(0,3), sticky='w')
-        submit_button.configure(highlightbackground=bgcolor)
+        submit_button.configure(highlightbackground=BGCOLOR)
         self.bind('<Return>', self.get_server_entry)
         self.run_button = tk.Button(b_frame, text='run', command=self.run_app, font=self.customFont)
-        self.run_button.configure(highlightbackground=bgcolor)
+        self.run_button.configure(highlightbackground=BGCOLOR)
         self.run_button.grid(row=1, column=4, padx=(0,3))
         self.bind('<Control-r>', self.run_app)
         reset_button = tk.Button(b_frame, text='reset', command=self.cleanup, font=self.customFont)
-        reset_button.config(highlightbackground=bgcolor)
+        reset_button.config(highlightbackground=BGCOLOR)
         reset_button.grid(row=1, column=5, sticky='we')
         showall_button = tk.Button(b_frame, text='all jobs', 
                                    command=self.show_all)
-        showall_button.configure(highlightbackground=bgcolor, font=self.customFont)
+        showall_button.configure(highlightbackground=BGCOLOR, font=self.customFont)
         showall_button.grid(row=2, column=3, sticky='w')
         close_button = tk.Button(b_frame, text='close', command=self.quit_app, font=self.customFont)
-        close_button.configure(highlightbackground=bgcolor)
+        close_button.configure(highlightbackground=BGCOLOR)
         close_button.grid(row=2, column=4, columnspan=2, sticky='we')
         self.entry = tk.Entry(b_frame, width=6, font=self.customFont)
         self.entry.grid(row=1, column=2, sticky='w', padx=(0,6))
-        self.entry.configure(background="#535353", foreground=fgcolor, highlightthickness=0)
+        self.entry.configure(background="#535353", foreground=FGCOLOR, highlightthickness=0)
 
         # file menu
         menubar = tk.Menu(self)
@@ -273,13 +274,13 @@ manager = localhost'''
                 if self.job_name == None:
                     self.text.set_text('Job name is empty, check file')
                     return
-            except csv.Error:
+            except (csv.Error, UnicodeDecodeError):
                 self.text.set_text('This file is not valid, try another!')
                 return
             self.all_servers = servers_sorted(self.the_csv_file)
             self.text.set_text('Job name: {}\n'.format(self.job_name))
             self.text.set_text("Found {} servers in file:".format(
-                              len(self.all_servers)))
+                                len(self.all_servers)))
             for num, serv in enumerate(self.all_servers):
                 self.text.set_text('{}) {}'.format(num+1, serv))
             self.text.set_text('\nenter server number and submit (hit ENTER)')
@@ -297,7 +298,7 @@ manager = localhost'''
                 self.selected_server = self.all_servers[int(server_num)-1]
                 self.text.set_text('\nyou\'ve selected server #{}'.format(server_num))
                 self.text.set_text("'{}'".format(self.selected_server))
-                self.text.set_text(r'Now press RUN button and choose .max file')
+                self.text.set_text('Now press RUN button (or hit "Space")\nand choose .max file')
                 self.run_button.focus()
             else:
                 self.text.set_text('enter number greater than zero')
@@ -380,26 +381,26 @@ class OpenPrefs(tkPopup.PopupWindow):
 
     def body(self, master):
         self.geometry('+680+100')
-        self.config(bg=bgcolor, takefocus=True, padx=20, pady=5)
+        self.config(bg=BGCOLOR, takefocus=True, padx=20, pady=5)
         window_frame = tk.Frame(self)
         enter_label = MyLabel(window_frame, text='render manager: ')
         enter_label.grid(row=0, column=0, sticky='w')
         self.ip_label = MyLabel(window_frame, text='')
         self.ip_label.grid(column=1, sticky='w')
         self.serv_entry = tk.Entry(window_frame)
-        self.serv_entry.configure(bg='#535353', fg=fgcolor, width=15)
+        self.serv_entry.configure(bg='#535353', fg=FGCOLOR, width=15)
         self.serv_entry.grid(row=0, column=1,  sticky='we')
         self.manager = config_reader('settings')['manager']
         test_button = tk.Button(window_frame, text='test', command=self.validate)
-        test_button.configure(highlightbackground=bgcolor)
+        test_button.configure(highlightbackground=BGCOLOR)
         test_button.grid(row=0, column=2, sticky='we', padx=(5,0))
         reset_button = tk.Button(window_frame, text='reset', command=self.set_local)
         reset_button.grid(row=0, column=3, sticky='we')
-        reset_button.configure(highlightbackground=bgcolor)
+        reset_button.configure(highlightbackground=BGCOLOR)
         self.serv_entry.insert(tk.END, self.manager)
-        window_frame.config(bg=bgcolor)
+        window_frame.config(bg=BGCOLOR)
         window_frame.pack()
-        self.buttonbox(bgcolor)
+        self.buttonbox(BGCOLOR)
 
     def set_local(self):
         self.serv_entry.delete(0, tk.END)
@@ -424,20 +425,20 @@ class ShowAllWindow(tkPopup.PopupWindow):
     def body(self, master, file):
         self.geometry('+680+100')
         self.resizable(0,0)
-        s_frame= tk.Frame(self, bg=bgcolor, highlightthickness=0)
+        s_frame= tk.Frame(self, bg=BGCOLOR, highlightthickness=0)
         s_frame.pack()
         sb = tk.Scrollbar(s_frame)
         txt_all = MyTextSettings(s_frame, width=42,
                                  yscrollcommand=sb.set)
         txt_all.pack(side=tk.LEFT, padx=(5,0))
-        sb.configure(highlightcolor=bgcolor, command=txt_all.yview)
+        sb.configure(highlightcolor=BGCOLOR, command=txt_all.yview)
         sb.pack(side=tk.LEFT, fill=tk.Y, expand=False)
 
         for item in servers_sorted(file):
             txt_all.set_text(item)
             txt_all.set_text(', '.join(return_frames(file, item)))
             txt_all.set_text('\r')
-        self.buttonbox(bgcolor, pad=20)
+        self.buttonbox(BGCOLOR, pad=20)
 
         
 if __name__ == '__main__':
