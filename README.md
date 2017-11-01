@@ -48,7 +48,7 @@ You can try with [sample file](https://raw.githubusercontent.com/movalex/pyburne
 5. If the `open result` check button is checked, the Explorer folder with .bat file will be opened. 
 6. When you run this .bat file, new job should appear in Backburner monitor. Job name is inherited from original job plus failed server name (Ex: `neon_v09_renderserver1`)    
 7. Since the script does not currently support multiple server submission, in case you have more than one server failed, just repeat steps 2-5. It is really fast after all. 
-8. After your job file is loaded, `All Jobs` button will show each server for the current job with corresponding frame numbers.
+8. `All Jobs` button shows each render server for the current job with corresponding frame numbers. This button is disabled until proper job file is loaded.
 
 ## TODO
 * add `reload config` button to preferences
