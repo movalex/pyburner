@@ -189,10 +189,11 @@ class MainApplication(tk.Tk):
         reset_button = tk.Button(b_frame, text='reset', command=self.cleanup, font=self.customFont)
         reset_button.config(highlightbackground=BGCOLOR)
         reset_button.grid(row=1, column=5, sticky='we')
-        showall_button = tk.Button(b_frame, text='all jobs', 
-                                   command=self.show_all)
-        showall_button.configure(highlightbackground=BGCOLOR, font=self.customFont)
-        showall_button.grid(row=2, column=3, sticky='w')
+        self.showall_button = tk.Button(b_frame, text='all jobs', 
+                                   command=self.show_all,
+                                   state=tk.DISABLED)
+        self.showall_button.configure(highlightbackground=BGCOLOR, font=self.customFont)
+        self.showall_button.grid(row=2, column=3, sticky='w')
         close_button = tk.Button(b_frame, text='close', command=self.quit_app, font=self.customFont)
         close_button.configure(highlightbackground=BGCOLOR)
         close_button.grid(row=2, column=4, columnspan=2, sticky='we')
@@ -234,6 +235,7 @@ class MainApplication(tk.Tk):
         self.all_servers = []
         self.the_csv_file = None
         self.read_config()
+        self.showall_button.config(state=tk.DISABLED)
 
     def read_config(self):
         try:
@@ -274,6 +276,8 @@ manager = localhost'''
                 if self.job_name == None:
                     self.text.set_text('Job name is empty, check file')
                     return
+                else:
+                    self.showall_button.config(state=tk.NORMAL)
             except (csv.Error, UnicodeDecodeError):
                 self.text.set_text('This file is not valid, try another!')
                 return
