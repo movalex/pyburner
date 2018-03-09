@@ -1,7 +1,7 @@
 # pyBurner
 This GUI script automates 3DMax network render job resubmission if one of the render servers had failed.
 ## Description
-Sometimes during render of a 3dMax animation on multiple servers, one of render server may fail the job. Then you need to resubmit the job with only frames that failed. You have to manually choose those frames and add them to render queue. I would prefer not to search failed frames manually. This script automates render job resubmission, so you have to just export job file from Backburner and then choose failed server. The result of the program is a `.bat` file, which being executed adds new job to the Backburner queue with all failed frames.
+Sometimes during render of a 3dMax animation on multiple servers, one of the render servers may fail the job. Then you need to resubmit the job with only frames that failed. You have to manually choose those frames and add them to render queue. I would prefer not to search failed frames manually. This script automates render job resubmission, so you have to just export job file from Backburner and then choose failed server. The result of the program is a `.bat` file, which being executed adds new job to the Backburner queue with all failed frames.
 
 `config.ini` file has options for:
 * Render priority
