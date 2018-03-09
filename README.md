@@ -17,9 +17,9 @@ The result file structure is following:
 ## Installation and run
 
 ### Windows command line usage
-You can use Python v2.10 or Python v3.3 and later to build the app.
+You can use Python 2 or Python 3 to build the app.
 
-1. install [Python v3.6.3](https://www.python.org/downloads/release/python-361/)
+1. install [Python v3.6](https://www.python.org/downloads/release/python-361/)
 2. `git clone git@github.com:movalex/pyburner.git` (you will probably have to install [Git for Windows](https://github.com/git-for-windows/git/releases/download/v2.13.1.windows.1/Git-2.13.1-64-bit.exe) first)
 3. `py -3 pyburner.py` in script folder
 
@@ -37,7 +37,7 @@ Keep in mind that latest Python 3 version that works with `py2exe` is 3.4.3.
 ![](/../screenshots/images/screenshot2.JPG "")
 
 ### Standalone and command line usage on Mac
-You can also use the script on Mac. I've added a lot of ugly hacks to make `tkinter` interface look almost the same on both Windows and OSX, completely for no reason. You can even build a standalone Mac application using [py2app](https://py2app.readthedocs.io/en/latest/). I have no idea how it is helpful, since 3Ds Max and Backburner both Windows applications...
+You can also use the script on Mac. I've added a lot of ugly hacks to make `tkinter` interface look almost the same on both Windows and OSX, completely for no reason. You can even build a standalone Mac application using [py2app](https://py2app.readthedocs.io/en/latest/). I have no idea how it is helpful, since 3Ds Max and Backburner are both Windows applications...:)
 
 ## Usage
 1. Go to Backburner Queue Monitor and export report file to the Desktop by right clicking the job name.
@@ -47,10 +47,10 @@ You can try with [sample file](https://raw.githubusercontent.com/movalex/pyburne
 4. Click 'run' button (or press Space button), and choose .max scene you want to re-render. Default path to look for .max files is C:/%userprofile%/Documents/. You can override this in `config.ini` file in `path` option. For network path just use regular UNC (`\\{computer name}\sharedFolder\resource`) path.
 5. If the `open result` check button is checked, the Explorer folder with .bat file will be opened. 
 6. When you run this .bat file, new job should appear in Backburner monitor. Job name is inherited from original job plus failed server name (Ex: `neon_v09_renderserver1`)    
-7. Since the script does not currently support multiple server submission, in case you have more than one server failed, just repeat steps 2-5. It is really fast after all. 
+7. Since the script does not currently support multiple server submission, in case you have more than one server failed, just repeat steps 2-5. It is really fast after all.
 8. `All Jobs` button shows each render server for the current job with corresponding frame numbers. This button is disabled until proper job file is loaded.
 
 ## TODO
 * add `reload config` button to preferences
-* save project folder path to last used
+* save last used project folder path
 * add `clear` button
