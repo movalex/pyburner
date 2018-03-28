@@ -1,5 +1,5 @@
 from __future__ import print_function
-from csv_parser import *
+from csv_parser import get_job_name, return_frames, servers_sorted
 import os
 import sys
 import csv
@@ -24,7 +24,7 @@ except ImportError:
 
 try:
     FileNotFoundError
-except NameError: 
+except NameError:
     # for Python2
     FileNotFoundError = IOError
 
@@ -37,10 +37,10 @@ def truncate_file(file):
     try:
         with open(file, 'r+') as f:
             f.truncate()
-    except FileNotFoundError: 
+    except FileNotFoundError:
         pass
 
-           
+
 def add_quotes(txt):
     return '"{}"'.format(txt)
 
@@ -73,34 +73,36 @@ def test_network(r_manager):
     try:
         ip_ = socket.gethostbyname(r_manager)
         return ip_
+
     except socket.gaierror:
-        err_message = '''Check your network connection.\n
-        Is your render server available?'''
+        err_message = '''Check your network connection.\nIs your render server available?'''
         messagebox.showerror('Network Error', err_message)
-        return 0   
+        return 0
 
 
 class MyTextSettings(tk.Text):
 
     def set_text(self, text):
-        self.insert(tk.END, text+'\n', 'txt_indent')
+        self.insert(tk.END, text + '\n', 'txt_indent')
         self.see(tk.END)
         if os_name == 'Darwin':
             my_font = Font(family="Lucida Console", size=11)
         elif os_name == 'Windows':
             my_font = Font(family="Consolas", size=9)
-        self.configure(font=my_font, bg='#333333', wrap=tk.WORD,
-                       fg=FGCOLOR, highlightthickness=0)
+        self.configure(
+            font=my_font, bg='#333333', wrap=tk.WORD, fg=FGCOLOR, highlightthickness=0
+        )
 
     def clear_all(self):
         self.delete("1.0", tk.END)
-        
+
     def clear_help(self):
         self.clear_all()
         self.set_text('Use "File --> Open" to choose .csv or .txt file')
 
 
 class MyLabel(tk.Label):
+
     def __init__(self, *args, **kwargs):
         tk.Label.__init__(self, *args, **kwargs)
         self.configure(bg=BGCOLOR, fg=FGCOLOR, highlightthickness=0)
@@ -108,7 +110,7 @@ class MyLabel(tk.Label):
 
 class MainApplication(tk.Tk):
     """main application window
-    
+
     Attributes:
         all_servers (list): returns list of all servers
         customFont (TYPE): defined two types of fonts for mac/win compatibility
@@ -119,13 +121,13 @@ class MainApplication(tk.Tk):
         L1 (UI label): label
         PRIORITY (txt): set priority for new Backburner job
         RENDER_MANAGER (txt): render manager name
-        run_button (button): run program to create .bat-render file 
-        SCENE_LOOKUP (txt): path to the folder with .max files 
-        selected_server (txt): failed server name you have chosen 
+        run_button (button): run program to create .bat-render file
+        SCENE_LOOKUP (txt): path to the folder with .max files
+        selected_server (txt): failed server name you have chosen
         server_frames_list (list): list of frames assigned to failed server to be re-rendered
         servers (list): list of servers in Backburner job
         text (txt): console text field
-        the_csv_file (file): Backburner job exported file 
+        the_csv_file (file): Backburner job exported file
         var (int): 1 - to call 'open result' function; 0 - to pass
         VERSION (txt): 3DsMax version
     """
@@ -142,21 +144,20 @@ class MainApplication(tk.Tk):
         elif os_name == 'Windows':
             txt_area = [18, 48]
             self.customFont = nametofont("TkDefaultFont")
-            self.customFont.configure(size=9)       
+            self.customFont.configure(size=9)
         # text area
         frame1 = tk.Frame(self)
         frame1.configure(background=BGCOLOR)
         frame1.grid(row=0, column=0, columnspan=2, sticky='w')
 
         scrollbar = tk.Scrollbar(frame1)
-        self.text = MyTextSettings(frame1,
-                                   height=txt_area[0],
-                                   width=txt_area[1],
-                                   yscrollcommand=scrollbar.set)
-        self.text.pack(padx=(4,0), side=tk.LEFT, expand=True)
-        scrollbar.configure(command=self.text.yview)      
+        self.text = MyTextSettings(
+            frame1, height=txt_area[0], width=txt_area[1], yscrollcommand=scrollbar.set
+        )
+        self.text.pack(padx=(4, 0), side=tk.LEFT, expand=True)
+        scrollbar.configure(command=self.text.yview)
         scrollbar.pack(side=tk.LEFT, fill=tk.Y, expand=False)
-        
+
         # labels area
         l_frame = tk.Frame(self)
         l_frame.config(background=BGCOLOR)
@@ -164,12 +165,13 @@ class MainApplication(tk.Tk):
         self.L1 = MyLabel(l_frame, font=self.customFont)
         self.L1.pack()
         self.var = tk.IntVar()
-        checkbutton1 = tk.Checkbutton(l_frame,
-                                      font=self.customFont,
-                                      background=BGCOLOR,
-                                      activebackground=BGCOLOR,
-                                      variable=self.var,
-                                      )
+        checkbutton1 = tk.Checkbutton(
+            l_frame,
+            font=self.customFont,
+            background=BGCOLOR,
+            activebackground=BGCOLOR,
+            variable=self.var,
+        )
         checkbutton1.pack(side=tk.LEFT)
         L2 = MyLabel(l_frame, bg="red", text="open result", font=self.customFont)
         L2.pack(side=tk.LEFT)
@@ -177,43 +179,48 @@ class MainApplication(tk.Tk):
         # buttons area
         b_frame = tk.Frame(self)
         b_frame.config(bg=BGCOLOR)
-        b_frame.grid(row=1, column=1,padx=(0, 20), sticky='e')
-        submit_button = tk.Button(b_frame, text='submit', command=self.get_server_entry, font=self.customFont)
-        submit_button.grid(row=1, column=3, padx=(0,3), sticky='w')
+        b_frame.grid(row=1, column=1, padx=(0, 20), sticky='e')
+        submit_button = tk.Button(
+            b_frame, text='submit', command=self.get_server_entry, font=self.customFont
+        )
+        submit_button.grid(row=1, column=3, padx=(0, 3), sticky='w')
         submit_button.configure(highlightbackground=BGCOLOR)
         self.bind('<Return>', self.get_server_entry)
-        self.run_button = tk.Button(b_frame, text='run', command=self.run_app, font=self.customFont)
+        self.run_button = tk.Button(
+            b_frame, text='run', command=self.run_app, font=self.customFont
+        )
         self.run_button.configure(highlightbackground=BGCOLOR)
-        self.run_button.grid(row=1, column=4, padx=(0,3))
+        self.run_button.grid(row=1, column=4, padx=(0, 3))
         self.bind('<Control-r>', self.run_app)
-        reset_button = tk.Button(b_frame, text='reset', command=self.cleanup, font=self.customFont)
+        reset_button = tk.Button(
+            b_frame, text='reset', command=self.cleanup, font=self.customFont
+        )
         reset_button.config(highlightbackground=BGCOLOR)
         reset_button.grid(row=1, column=5, sticky='we')
-        self.showall_button = tk.Button(b_frame, text='all jobs', 
-                                   command=self.show_all,
-                                   state=tk.DISABLED)
+        self.showall_button = tk.Button(
+            b_frame, text='all jobs', command=self.show_all, state=tk.DISABLED
+        )
         self.showall_button.configure(highlightbackground=BGCOLOR, font=self.customFont)
         self.showall_button.grid(row=2, column=3, sticky='w')
-        close_button = tk.Button(b_frame, text='close', command=self.quit_app, font=self.customFont)
+        close_button = tk.Button(
+            b_frame, text='close', command=self.quit_app, font=self.customFont
+        )
         close_button.configure(highlightbackground=BGCOLOR)
         close_button.grid(row=2, column=4, columnspan=2, sticky='we')
         self.entry = tk.Entry(b_frame, width=6, font=self.customFont)
-        self.entry.grid(row=1, column=2, sticky='w', padx=(0,6))
-        self.entry.configure(background="#535353", foreground=FGCOLOR, highlightthickness=0)
+        self.entry.grid(row=1, column=2, sticky='w', padx=(0, 6))
+        self.entry.configure(
+            background="#535353", foreground=FGCOLOR, highlightthickness=0
+        )
 
         # file menu
         menubar = tk.Menu(self)
         filemenu = tk.Menu(menubar, tearoff=0)
         self.config(menu=menubar)
-        filemenu.add_command(label='Open',
-                             command=self.csv_open,
-                             accelerator="Ctrl+O")
-        filemenu.add_command(label='Preferences',
-                             command=self.open_preferences)
+        filemenu.add_command(label='Open', command=self.csv_open, accelerator="Ctrl+O")
+        filemenu.add_command(label='Preferences', command=self.open_preferences)
         filemenu.add_separator()
-        filemenu.add_command(label='Exit',
-                             command=self.quit_app,
-                             accelerator='Ctrl+Q')
+        filemenu.add_command(label='Exit', command=self.quit_app, accelerator='Ctrl+Q')
         self.bind("<Control-o>", self.csv_open)
         self.bind("<Control-q>", self.quit_app)
         menubar.add_cascade(label='File', menu=filemenu)
@@ -244,7 +251,7 @@ class MainApplication(tk.Tk):
             self.RENDER_MANAGER = config_reader('settings')['manager']
             self.VERSION = config_reader('settings')['version']
         except (configparser.NoSectionError, KeyError):
-            sample_config=r'''[settings]
+            sample_config = r'''[settings]
 priority = 100
 path = ~\Documents
 version = 2016
@@ -265,30 +272,36 @@ manager = localhost'''
     def csv_open(self, *args):
         self.text.clear_all()
         self.the_csv_file = filedialog.askopenfilename(
-                        initialdir='{}/Desktop'.format(os.path.expanduser('~')),
-                        filetypes=(('Text File', '*.txt'),
-                                   ('CSV file', '*.csv'),
-                                   ('All Files', '*.*')),
-                        title='Choose a file')
+            initialdir='{}/Desktop'.format(os.path.expanduser('~')),
+            filetypes=(
+                ('Text File', '*.txt'), ('CSV file', '*.csv'), ('All Files', '*.*')
+            ),
+            title='Choose a file',
+        )
         if self.the_csv_file:
             try:
                 self.job_name = get_job_name(self.the_csv_file)
-                if self.job_name == None:
+                if self.job_name is None:
                     self.text.set_text('Job name is empty, check file')
                     return
+
                 else:
                     self.showall_button.config(state=tk.NORMAL)
             except (csv.Error, UnicodeDecodeError):
                 self.text.set_text('This file is not valid, try another!')
                 return
+
             self.all_servers = servers_sorted(self.the_csv_file)
             self.text.set_text('Job name: {}\n'.format(self.job_name))
-            self.text.set_text("Found {} servers in file:".format(
-                                len(self.all_servers)))
+            self.text.set_text(
+                "Found {} servers in file:".format(len(self.all_servers))
+            )
             for num, serv in enumerate(self.all_servers):
-                self.text.set_text('{}) {}'.format(num+1, serv))
+                self.text.set_text('{}) {}'.format(num + 1, serv))
             self.text.set_text('\nenter server number and submit (hit ENTER)')
-            self.L1.config(text='Enter server number (1-{})'.format(len(self.all_servers)))
+            self.L1.config(
+                text='Enter server number (1-{})'.format(len(self.all_servers))
+            )
             self.entry.delete("0", tk.END)
             self.entry.focus()
         else:
@@ -298,11 +311,17 @@ manager = localhost'''
         try:
             server_num = int(self.entry.get().strip())
             if server_num > 0:
-                self.server_frames_list = list(return_frames(self.the_csv_file, self.all_servers[int(server_num)-1]))
-                self.selected_server = self.all_servers[int(server_num)-1]
+                self.server_frames_list = list(
+                    return_frames(
+                        self.the_csv_file, self.all_servers[int(server_num) - 1]
+                    )
+                )
+                self.selected_server = self.all_servers[int(server_num) - 1]
                 self.text.set_text('\nyou\'ve selected server #{}'.format(server_num))
                 self.text.set_text("'{}'".format(self.selected_server))
-                self.text.set_text('Now press RUN button (or hit "Space")\nand choose .max file')
+                self.text.set_text(
+                    'Now press RUN button (or hit "Space")\nand choose .max file'
+                )
                 self.run_button.focus()
             else:
                 self.text.set_text('enter number greater than zero')
@@ -311,12 +330,13 @@ manager = localhost'''
 
     def choose_max_file(self):
         open_maxfile = filedialog.askopenfilename(
-                  initialdir=self.SCENE_LOOKUP,
-                  filetypes=(('3dMax file', '*.max'),
-                            ('All Files', '*.*')),
-                  title='Choose MAX file')
+            initialdir=self.SCENE_LOOKUP,
+            filetypes=(('3dMax file', '*.max'), ('All Files', '*.*')),
+            title='Choose MAX file',
+        )
         if open_maxfile:
             return open_maxfile
+
         else:
             self.text.set_text('\nClick "run" and choose .max file!')
             return 0
@@ -329,13 +349,16 @@ manager = localhost'''
                 self.text.set_text('\nThese frames will be rendered again:')
                 self.text.set_text(", ".join(self.server_frames_list))
                 self.text.set_text('\r')
-                self.ip_address = test_network(self.RENDER_MANAGER) #test network path again just in case
+                self.ip_address = test_network(
+                    self.RENDER_MANAGER
+                )  # test network path again just in case
                 if self.ip_address:
                     norm_path = os.path.normpath(max_file)
                     self.make_bat(norm_path)
                 else:
-                    self.text.set_text('\nCheck server settings\
-                        in preferences and run again')
+                    self.text.set_text(
+                        '\nCheck server settings in Preferences and run again'
+                    )
         elif not self.job_name:
             self.text.set_text("You should select jobs file first")
         elif not self.selected_server:
@@ -352,19 +375,30 @@ manager = localhost'''
             pass
 
     def make_bat(self, max_path):
-        max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(self.VERSION)
+        max_version = '\"C:\\Program Files\\Autodesk\\3ds Max {}\\3dsmaxcmd.exe\"'.format(
+            self.VERSION
+        )
         quoted_max_file = add_quotes(max_path)
         max_folder, max_file = os.path.split(max_path)
         filename, _ = os.path.splitext(max_file)
-        bat_file = os.path.join(max_folder, '{}_{}.bat'.format(filename, self.selected_server))
+        bat_file = os.path.join(
+            max_folder, '{}_{}.bat'.format(filename, self.selected_server)
+        )
         truncate_file(bat_file)
         with open(bat_file, 'a') as bat:
             print(max_version, quoted_max_file, file=bat, end=' ')
-            print('-frames:', file=bat, end='')
-            print(",".join(self.server_frames_list), file=bat, end=' ')
-            print('-submit:', self.ip_address,
-                  file=bat, end=' ')
-            print('-jobname: {}_{}'.format(self.job_name, self.selected_server), file=bat, end=' ')
+            print(
+                '-frames:{}'.format(",".join(self.server_frames_list)),
+                file=bat,
+                end=' ',
+            )
+            # print(",".join(self.server_frames_list), file=bat, end=' ')
+            print('-submit:', self.ip_address, file=bat, end=' ')
+            print(
+                '-jobname: {}_{}'.format(self.job_name, self.selected_server),
+                file=bat,
+                end=' ',
+            )
             print('-priority:{}'.format(self.PRIORITY), file=bat)
         if self.var.get() == 1:
             self.text.set_text('Opening folder...\n')
@@ -372,14 +406,15 @@ manager = localhost'''
             self.var.set(0)  # uncheck button to prevent multiple windows when re-run
         else:
             pass
-        self.text.set_text('Done!\nCheck "{}" at {}'.format(
-                          os.path.split(bat_file)[1], max_folder))
+        self.text.set_text(
+            'Done!\nCheck "{}" at {}'.format(os.path.split(bat_file)[1], max_folder)
+        )
         self.entry.focus()
 
     @staticmethod
     def quit_app(event=None):
         sys.exit(0)
-        
+
 
 class OpenPrefs(tkPopup.PopupWindow):
 
@@ -393,11 +428,11 @@ class OpenPrefs(tkPopup.PopupWindow):
         self.ip_label.grid(column=1, sticky='w')
         self.serv_entry = tk.Entry(window_frame)
         self.serv_entry.configure(bg='#535353', fg=FGCOLOR, width=15)
-        self.serv_entry.grid(row=0, column=1,  sticky='we')
+        self.serv_entry.grid(row=0, column=1, sticky='we')
         self.manager = config_reader('settings')['manager']
         test_button = tk.Button(window_frame, text='test', command=self.validate)
         test_button.configure(highlightbackground=BGCOLOR)
-        test_button.grid(row=0, column=2, sticky='we', padx=(5,0))
+        test_button.grid(row=0, column=2, sticky='we', padx=(5, 0))
         reset_button = tk.Button(window_frame, text='reset', command=self.set_local)
         reset_button.grid(row=0, column=3, sticky='we')
         reset_button.configure(highlightbackground=BGCOLOR)
@@ -416,6 +451,7 @@ class OpenPrefs(tkPopup.PopupWindow):
         if ipaddress:
             self.ip_label.config(text=ipaddress)
             return 1
+
         else:
             self.ip_label.config(text='connection error')
             return 0
@@ -428,13 +464,12 @@ class ShowAllWindow(tkPopup.PopupWindow):
 
     def body(self, master, file):
         self.geometry('+680+100')
-        self.resizable(0,0)
-        s_frame= tk.Frame(self, bg=BGCOLOR, highlightthickness=0)
+        self.resizable(0, 0)
+        s_frame = tk.Frame(self, bg=BGCOLOR, highlightthickness=0)
         s_frame.pack()
         sb = tk.Scrollbar(s_frame)
-        txt_all = MyTextSettings(s_frame, width=42,
-                                 yscrollcommand=sb.set)
-        txt_all.pack(side=tk.LEFT, padx=(5,0))
+        txt_all = MyTextSettings(s_frame, width=42, yscrollcommand=sb.set)
+        txt_all.pack(side=tk.LEFT, padx=(5, 0))
         sb.configure(highlightcolor=BGCOLOR, command=txt_all.yview)
         sb.pack(side=tk.LEFT, fill=tk.Y, expand=False)
 
@@ -444,7 +479,7 @@ class ShowAllWindow(tkPopup.PopupWindow):
             txt_all.set_text('\r')
         self.buttonbox(BGCOLOR, pad=20)
 
-        
+
 if __name__ == '__main__':
     app = MainApplication()
     app.resizable(width=tk.FALSE, height=tk.FALSE)
