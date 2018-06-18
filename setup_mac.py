@@ -1,7 +1,6 @@
 from setuptools import setup
 # import sys
 
-
 APP = ['pyburner.py']
 DATA_FILES = ["config.ini"]
 OPTIONS = {'argv_emulation': True}
@@ -14,10 +13,7 @@ setup(
     version = '0.0.1',
     name = 'pyBurner', 
     description = '''
-    create .bat file
-    to submit rerender of failed server\'s frames
-    with Autodesk Backburner
+    create .bat file to resubmit 3DMax network render job with chosen frames
     ''',
     setup_requires=['py2app']
 )
-

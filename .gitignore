@@ -6,6 +6,8 @@ tests/
 .stfolder
 *.pyc
 test_*
+.vscode/
+
 
 # Distribution / packaging
 

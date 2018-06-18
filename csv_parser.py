@@ -1,7 +1,8 @@
 from __future__ import print_function
 import csv
+import sys
 
-test_file = 'neon9.txt'
+# test_file = 'neon9.txt'
 
 
 def parse_it(file_, delimiter):
@@ -33,10 +34,9 @@ def return_frames(file_, server):
     for line_ in parse_it(file_, delimiter='\t'):
         try:
             if line_[4] == server:
-                if line_[2] == "00000":
-                    frame = line_[2][:1]
-                else:
-                    frame = line_[2].lstrip("0")
+                frame = line_[2].lstrip("0")
+                if frame == "":
+                    frame = "0"
                 yield frame
             else:
                 pass
@@ -45,11 +45,12 @@ def return_frames(file_, server):
 
 
 def print_all_jobs(file_):
-    print('Job name: {}\n'.format(get_job_name(test_file)))
+    print('Job name: {}\n'.format(get_job_name(file_)))
     for server in servers_sorted(file_):
         print(server)
         print(','.join(return_frames(file_, server)), end='\n\n')
 
 
 if __name__ == '__main__':
-    print_all_jobs(test_file)
+    print_all_jobs(sys.argv[1])
+

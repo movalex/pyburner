@@ -24,7 +24,7 @@ class PopupWindow(tk.Toplevel):
 
     # construction hooks
 
-    def body(self, master):
+    def body(self, *args):
         # create dialog body.  return widget that should have
         # initial focus.  this method should be overridden
         pass
