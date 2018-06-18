@@ -49,7 +49,6 @@ Keep in mind that latest Python 3 version that works with `py2exe` is 3.4.3.
 You can also use the script as Mac application. I've added a lot of ugly hacks to make `tkinter` interface look almost the same on both Windows and OSX, completely for no reason.
 
 ![](/../screenshots/images/Screenshot%203.png "")
-![](/../screenshots/images/Screenshot%204.png "")
 
 You can even build a standalone Mac application using [py2app](https://py2app.readthedocs.io/en/latest/). I have no idea if it is useful, since 3Ds Max and Backburner are both Windows applications...:)
 
