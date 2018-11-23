@@ -64,6 +64,7 @@ You can try with [sample file](https://raw.githubusercontent.com/movalex/pyburne
 8. `All Jobs` button shows each render server for the current job with corresponding frame numbers. This button is disabled until proper job file is loaded.
 
 ## TODO
+* add tests as promised
 * add `reload config` button to preferences
 * save last used project folder path
 * add `clear` button
